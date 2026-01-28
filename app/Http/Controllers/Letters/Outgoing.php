@@ -1,249 +1,246 @@
 <?php
-defined('BASEPATH') or exit('No direct script access allowed');
 
-/**
- * @property CI_Form_validation $form_validation
- * @property CI_Upload $upload
- * @property Letter_Outgoing $letter_outgoing
- */
-class Outgoing extends CI_Controller
+namespace App\Http\Controllers;
+
+use App\Models\LetterOutgoing;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Carbon\Carbon;
+
+class OutgoingController extends Controller
 {
-    public function __construct()
+    /* =============================
+       INDEX
+    ============================== */
+    public function index(Request $request)
     {
-        parent::__construct();
+        $letterdate   = $request->letterdate;
+        $letterstatus = $request->letterstatus;
 
-        $this->load->model('Letter_Outgoing', 'letter_outgoing');
-    }
+        $query = LetterOutgoing::query();
 
-    public function index()
-    {
-        $letterdate = getGet('letterdate');
-        $letterstatus = getGet('letterstatus');
-        $where = array();
+        /* Filter Tanggal */
+        if ($letterdate) {
 
-        if ($letterdate != null) {
-            $explode = explode(' - ', $letterdate);
-            if (count($explode) == 2) {
-                $start = date('Y-m-d', strtotime($explode[0]));
-                $end = date('Y-m-d', strtotime($explode[1]));
+            $range = explode(' - ', $letterdate);
 
-                $where['a.letterdate >='] = $start;
-                $where['a.letterdate <='] = $end;
+            if (count($range) == 2) {
+
+                $start = Carbon::parse($range[0])->format('Y-m-d');
+                $end   = Carbon::parse($range[1])->format('Y-m-d');
+
+                $query->whereBetween('letterdate', [$start, $end]);
             }
+
         } else {
-            $where['a.letterdate'] = date('Y-m-d');
+
+            $query->whereDate('letterdate', now());
         }
 
-        if ($letterstatus != null) {
-            $where['a.letterstatus'] = $letterstatus;
+        /* Filter Status */
+        if ($letterstatus) {
+            $query->where('letterstatus', $letterstatus);
         }
-        $pending_where = [
-            'is_tindak' => 0
-        ];
 
-        $count_pending = $this->letter_outgoing->total($pending_where);
-        $data = array();
-        $data['title'] = 'Arsip Surat Keluar';
-        $data['content'] = 'archive/letters/outgoing/index';
-        $data['letters'] = $this->letter_outgoing->order_by('a.letterdate', 'DESC')->result($where);
-        $data['letterdate'] = $letterdate;
-        $data['letterstatus'] = $letterstatus;
-        $data['pendingCount'] = $count_pending;
+        /* Pending */
+        $pendingCount = LetterOutgoing::where('is_tindak', 0)->count();
 
+        $letters = $query
+                    ->orderBy('letterdate', 'desc')
+                    ->get();
 
-
-        return $this->load->view('master', $data);
+        return view('archive.letters.outgoing.index', [
+            'title'         => 'Arsip Surat Keluar',
+            'letters'       => $letters,
+            'letterdate'    => $letterdate,
+            'letterstatus'  => $letterstatus,
+            'pendingCount'  => $pendingCount,
+        ]);
     }
 
-    public function add()
+    /* =============================
+       ADD FORM
+    ============================== */
+    public function create()
     {
-        $data = array();
-        $data['title'] = 'Tambah Arsip Surat Keluar';
-        $data['content'] = 'archive/letters/outgoing/add';
-
-        return $this->load->view('master', $data);
+        return view('archive.letters.outgoing.add', [
+            'title' => 'Tambah Arsip Surat Keluar'
+        ]);
     }
 
-    public function add_process()
+
+    /* =============================
+       STORE
+    ============================== */
+    public function store(Request $request)
     {
-        $letterfile = isset($_FILES['letterfile']) ? $_FILES['letterfile'] : null;
-        $letterdate = getPost('letterdate');
-        $letternumber = getPost('letternumber');
-        $letterdestination = getPost('letterdestination');
-        $lettersubject = getPost('lettersubject');
-        $letterstatus = getPost('letterstatus');
-        $letterdescription = getPost('letterdescription');
+        $request->validate([
+            'letterdate'        => 'required|date',
+            'letternumber'      => 'required',
+            'letterdestination'=> 'required',
+            'lettersubject'     => 'required',
+            'letterstatus'      => 'required',
+            'letterfile'        => 'required|file|mimes:pdf,xls,xlsx,xlsm,doc,docx',
+        ]);
 
-        $this->form_validation->set_rules('letterdate', 'Tanggal Surat', 'required|trim');
-        $this->form_validation->set_rules('letternumber', 'Nomor Surat', 'required|trim');
-        $this->form_validation->set_rules('letterdestination', 'Tujuan Surat', 'required|trim');
-        $this->form_validation->set_rules('lettersubject', 'Perihal Surat', 'required|trim');
-        $this->form_validation->set_rules('letterstatus', 'Status Surat', 'required|trim');
-        $this->form_validation->set_rules('letterdescription', 'Keterangan Surat', 'trim');
+        /* Upload File */
+        $fileName = null;
 
-        if ($this->form_validation->run() == false) {
-            return JSONResponseDefault('FAILED', strip_tags(validation_errors()));
+        if ($request->hasFile('letterfile')) {
+
+            $fileName = $request->file('letterfile')
+                        ->store('letters/outgoing', 'public');
         }
 
-        if ($letterfile['error'] == 0) {
-            $config['upload_path'] = './uploads/letters/outgoing/';
-            $config['allowed_types'] = 'pdf|xls|xlsx|xlsm|doc|docx';
-            $config['encrypt_name'] = true;
+        LetterOutgoing::create([
 
-            $this->load->library('upload', $config);
+            'letterdate'        => $request->letterdate,
+            'letternumber'      => $request->letternumber,
+            'letterdestination'=> $request->letterdestination,
+            'lettersubject'     => $request->lettersubject,
+            'letterstatus'      => $request->letterstatus,
+            'letterdescription'=> $request->letterdescription,
+            'letterfile'        => $fileName,
+        ]);
 
-            if (!$this->upload->do_upload('letterfile')) {
-                return JSONResponseDefault('FAILED', strip_tags($this->upload->display_errors()));
-            }
-
-            $data = array(
-                'letterdate' => date('Y-m-d', strtotime($letterdate)),
-                'letternumber' => $letternumber,
-                'letterdestination' => $letterdestination,
-                'lettersubject' => $lettersubject,
-                'letterstatus' => $letterstatus,
-                'letterdescription' => $letterdescription,
-                'letterfile' => $this->upload->data('file_name'),
-            );
-
-            if ($this->letter_outgoing->insert($data)) {
-                return JSONResponseDefault('OK', 'Berhasil menambah surat keluar');
-            } else {
-                return JSONResponseDefault('FAILED', 'Gagal menambah surat keluar');
-            }
-        } else {
-            return JSONResponseDefault('FAILED', 'File surat tidak ditemukan');
-        }
+        return response()->json([
+            'status'  => 'OK',
+            'message' => 'Berhasil menambah surat keluar'
+        ]);
     }
 
+
+    /* =============================
+       EDIT FORM
+    ============================== */
     public function edit($id)
     {
-        $letter = $this->letter_outgoing->row(array('id' => $id));
-        if (!$letter) {
-            return redirect(base_url('letters/outgoing'));
-        }
+        $letter = LetterOutgoing::findOrFail($id);
 
-        $data = array();
-        $data['title'] = 'Ubah Arsip Surat Keluar';
-        $data['content'] = 'archive/letters/outgoing/edit';
-        $data['letter'] = $letter;
-
-        return $this->load->view('master', $data);
+        return view('archive.letters.outgoing.edit', [
+            'title'  => 'Ubah Arsip Surat Keluar',
+            'letter' => $letter
+        ]);
     }
 
-    public function edit_process($id)
+
+    /* =============================
+       UPDATE
+    ============================== */
+    public function update(Request $request, $id)
     {
-        $letter = $this->letter_outgoing->row(array('id' => $id));
-        if (!$letter) {
-            return JSONResponseDefault('FAILED', 'Data tidak ditemukan');
-        }
+        $letter = LetterOutgoing::findOrFail($id);
 
-        $letterfile = isset($_FILES['letterfile']) ? $_FILES['letterfile'] : null;
-        $letterdate = getPost('letterdate');
-        $letternumber = getPost('letternumber');
-        $letterdestination = getPost('letterdestination');
-        $lettersubject = getPost('lettersubject');
-        $letterstatus = getPost('letterstatus');
-        $letterdescription = getPost('letterdescription');
-        $old_letterfile = getPost('old_letterfile');
+        $request->validate([
+            'letterdate'        => 'required|date',
+            'letternumber'      => 'required',
+            'letterdestination'=> 'required',
+            'lettersubject'     => 'required',
+            'letterstatus'      => 'required',
+            'letterfile'        => 'nullable|file|mimes:pdf,xls,xlsx,xlsm,doc,docx',
+        ]);
 
-        $this->form_validation->set_rules('letterdate', 'Tanggal Surat', 'required|trim');
-        $this->form_validation->set_rules('letternumber', 'Nomor Surat', 'required|trim');
-        $this->form_validation->set_rules('letterdestination', 'Tujuan Surat', 'required|trim');
-        $this->form_validation->set_rules('lettersubject', 'Perihal Surat', 'required|trim');
-        $this->form_validation->set_rules('letterstatus', 'Status Surat', 'required|trim');
-        $this->form_validation->set_rules('letterdescription', 'Keterangan Surat', 'trim');
+        $data = $request->only([
+            'letterdate',
+            'letternumber',
+            'letterdestination',
+            'lettersubject',
+            'letterstatus',
+            'letterdescription'
+        ]);
 
-        if ($this->form_validation->run() == false) {
-            return JSONResponseDefault('FAILED', strip_tags(validation_errors()));
-        }
+        /* Jika Upload Baru */
+        if ($request->hasFile('letterfile')) {
 
-        if ($letterfile['error'] == 0) {
-            $config['upload_path'] = './uploads/letters/outgoing/';
-            $config['allowed_types'] = 'pdf|xls|xlsx|xlsm|doc|docx';
-            $config['encrypt_name'] = true;
-
-            $this->load->library('upload', $config);
-
-            if (!$this->upload->do_upload('letterfile')) {
-                return JSONResponseDefault('FAILED', strip_tags($this->upload->display_errors()));
+            if ($letter->letterfile) {
+                Storage::disk('public')->delete($letter->letterfile);
             }
 
-            if (file_exists('./uploads/letters/outgoing/' . $old_letterfile)) {
-                @unlink('./uploads/letters/outgoing/' . $old_letterfile);
-            }
-
-            $data = array(
-                'letterdate' => date('Y-m-d', strtotime($letterdate)),
-                'letternumber' => $letternumber,
-                'letterdestination' => $letterdestination,
-                'lettersubject' => $lettersubject,
-                'letterstatus' => $letterstatus,
-                'letterdescription' => $letterdescription,
-                'letterfile' => $this->upload->data('file_name'),
-            );
-        } else {
-            $data = array(
-                'letterdate' => date('Y-m-d', strtotime($letterdate)),
-                'letternumber' => $letternumber,
-                'letterdestination' => $letterdestination,
-                'lettersubject' => $lettersubject,
-                'letterstatus' => $letterstatus,
-                'letterdescription' => $letterdescription,
-            );
+            $data['letterfile'] = $request
+                                ->file('letterfile')
+                                ->store('letters/outgoing', 'public');
         }
 
-        if ($this->letter_outgoing->update(array('id' => $id), $data)) {
-            return JSONResponseDefault('OK', 'Berhasil mengubah surat keluar');
-        } else {
-            return JSONResponseDefault('FAILED', 'Gagal mengubah surat keluar');
-        }
-    }
-    public function realis()
-    {
-        $id = getPost('id');
-        $this->letter_outgoing->update(['id' => $id], ['is_realis' => 1]);
-        return JSONResponseDefault('OK', 'Berhasil direalisasi');
+        $letter->update($data);
+
+        return response()->json([
+            'status'  => 'OK',
+            'message' => 'Berhasil mengubah surat keluar'
+        ]);
     }
 
 
-
-    public function tindak()
+    /* =============================
+       REALISASI
+    ============================== */
+    public function realis(Request $request)
     {
-        $id = getPost('id');
-        $information = getPost('information') ?? 'Surat sudah ditindaklanjuti otomatis';
+        $request->validate([
+            'id' => 'required'
+        ]);
 
-        $this->letter_outgoing->update(
-            ['id' => $id],
-            ['is_tindak' => 1, 'information' => $information]
-        );
-        return JSONResponseDefault('OK', 'Surat berhasil ditindaklanjuti');
+        LetterOutgoing::where('id', $request->id)
+            ->update(['is_realis' => 1]);
+
+        return response()->json([
+            'status'  => 'OK',
+            'message' => 'Berhasil direalisasi'
+        ]);
     }
 
 
-    public function delete()
+    /* =============================
+       TINDAK
+    ============================== */
+    public function tindak(Request $request)
     {
-        $id = getPost('id');
+        $request->validate([
+            'id' => 'required'
+        ]);
 
-        $this->form_validation->set_rules('id', 'ID Surat', 'required|trim');
+        LetterOutgoing::where('id', $request->id)
+            ->update([
+                'is_tindak'    => 1,
+                'information' => $request->information
+                    ?? 'Surat sudah ditindaklanjuti otomatis'
+            ]);
 
-        if ($this->form_validation->run() == false) {
-            return JSONResponseDefault('FAILED', strip_tags(validation_errors()));
-        }
+        return response()->json([
+            'status'  => 'OK',
+            'message' => 'Surat berhasil ditindaklanjuti'
+        ]);
+    }
 
-        $letter = $this->letter_outgoing->row(array('id' => $id));
+
+    /* =============================
+       DELETE
+    ============================== */
+    public function destroy(Request $request)
+    {
+        $request->validate([
+            'id' => 'required'
+        ]);
+
+        $letter = LetterOutgoing::find($request->id);
+
         if (!$letter) {
-            return JSONResponseDefault('FAILED', 'Data tidak ditemukan');
+
+            return response()->json([
+                'status'  => 'FAILED',
+                'message' => 'Data tidak ditemukan'
+            ]);
         }
 
-        if ($this->letter_outgoing->delete(array('id' => $id))) {
-            if (file_exists('./uploads/letters/outgoing/' . $letter->letterfile)) {
-                @unlink('./uploads/letters/outgoing/' . $letter->letterfile);
-            }
-
-            return JSONResponseDefault('OK', 'Data berhasil dihapus');
-        } else {
-            return JSONResponseDefault('FAILED', 'Data gagal dihapus');
+        /* Hapus File */
+        if ($letter->letterfile) {
+            Storage::disk('public')->delete($letter->letterfile);
         }
+
+        $letter->delete();
+
+        return response()->json([
+            'status'  => 'OK',
+            'message' => 'Data berhasil dihapus'
+        ]);
     }
 }

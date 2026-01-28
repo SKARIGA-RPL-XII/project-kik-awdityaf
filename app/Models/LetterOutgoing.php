@@ -2,17 +2,29 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class LetterOutgoing extends Model
 {
-    protected $table = 'letter_outgoings';
+    use HasFactory;
+
+    protected $table = 'letter_outgoing';
 
     protected $fillable = [
         'letterdate',
-        'is_tindak',
+        'letternumber',
+        'letterdestination',
+        'lettersubject',
+        'letterstatus',
+        'letterdescription',
+        'letterfile',
         'is_realis',
+        'is_tindak',
+        'information',
     ];
 
-    public $timestamps = false;
+    protected $casts = [
+        'letterdate' => 'date',
+    ];
 }

@@ -1,436 +1,230 @@
 <?php
-defined('BASEPATH') or exit('No direct script access allowed');
 
-class Payment extends CI_Controller
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+
+use App\Models\MembershipPlan;
+use App\Models\MemberSubscription;
+use App\Models\GymMember;
+
+class PaymentController extends Controller
 {
-    private $server_key;
-    private $client_key;
-    private $is_production;
-    private $midtrans_url;
+    private string $serverKey;
+    private string $clientKey;
+    private bool $isProduction;
+    private string $midtransUrl;
 
     public function __construct()
     {
-        parent::__construct();
-        $this->load->model('Membership_Plan_model', 'membership_plan');
-        $this->load->model('Member_Subscription_model', 'member_subscription');
-        $this->load->model('Gym_Member_model', 'gym_member');
-        $this->load->helper('url');
-        $this->load->library('session');
-        $this->load->library('form_validation');
-        $this->load->dbforge();
-        $this->load->database();
+        $this->middleware('auth');
 
-        // Midtrans Configuration (Development Mode)
-        // Using Midtrans public demo credentials for testing
-        $this->server_key = 'SB-Mid-server-rrHhwl-lwOLrwJkroPggJyUw'; // Working demo server key
-        $this->client_key = 'SB-Mid-client-nKsqvar5cn60u2Lv'; // Working demo client key
-        $this->is_production = false; // Set to true for production
-        $this->midtrans_url = $this->is_production ? 'https://app.midtrans.com/snap/v1/transactions' : 'https://app.sandbox.midtrans.com/snap/v1/transactions';
+        $this->serverKey = config('services.midtrans.server_key');
+        $this->clientKey = config('services.midtrans.client_key');
+        $this->isProduction = config('services.midtrans.is_production');
 
-        // Create payment-related columns if they don't exist
-        $this->create_payment_columns();
+        $this->midtransUrl = $this->isProduction
+            ? 'https://app.midtrans.com/snap/v1/transactions'
+            : 'https://app.sandbox.midtrans.com/snap/v1/transactions';
     }
 
-    // Create payment transaction
-    public function create_transaction()
+    // ===============================
+    // CREATE TRANSACTION
+    // ===============================
+    public function createTransaction(Request $request)
     {
-        $plan_id = $this->input->post('plan_id');
-        $member_id = $this->input->post('member_id');
-
-        if (!$plan_id || !$member_id) {
-            $this->output
-                ->set_content_type('application/json')
-                ->set_output(json_encode(['status' => 'error', 'message' => 'Missing required parameters']));
-            return;
-        }
-
-        // Get plan details
-        $plan = $this->membership_plan->getPlanById($plan_id);
-        if (!$plan) {
-            $this->output
-                ->set_content_type('application/json')
-                ->set_output(json_encode(['status' => 'error', 'message' => 'Plan not found']));
-            return;
-        }
-
-        // Get member details
-        $member = $this->gym_member->getMemberById($member_id);
-        if (!$member) {
-            $this->output
-                ->set_content_type('application/json')
-                ->set_output(json_encode(['status' => 'error', 'message' => 'Member not found']));
-            return;
-        }
-
-        // Get user details
-        $user = $this->db->get_where('user', ['id' => $member['user_id']])->row_array();
-
-        // Generate unique order ID
-        $order_id = 'GYM-' . $member['member_code'] . '-' . time();
-
-        // Create pending subscription record
-        $subscription_data = [
-            'member_id' => $member_id,
-            'membership_plan_id' => $plan_id,
-            'start_date' => date('Y-m-d'),
-            'end_date' => date('Y-m-d', strtotime('+' . $plan['duration_months'] . ' months')),
-            'amount_paid' => $plan['price'],
-            'payment_status' => 'Pending',
-            'payment_method' => 'midtrans',
-            'order_id' => $order_id,
-            'created_at' => date('Y-m-d H:i:s')
-        ];
-
-        $subscription_id = $this->member_subscription->createSubscription($subscription_data);
-
-        // Prepare Midtrans transaction data
-        $transaction_data = [
-            'transaction_details' => [
-                'order_id' => $order_id,
-                'gross_amount' => (int)$plan['price']
-            ],
-            'customer_details' => [
-                'first_name' => $user['name'] ?? 'Member',
-                'email' => $user['email'] ?? 'member@gym.com',
-                'phone' => $member['phone'] ?? '08123456789'
-            ],
-            'item_details' => [
-                [
-                    'id' => 'membership_' . $plan['id'],
-                    'price' => (int)$plan['price'],
-                    'quantity' => 1,
-                    'name' => $plan['plan_name'] ?? 'Gym Membership',
-                    'category' => 'membership'
-                ]
-            ]
-        ];
-
-        // Add callbacks for web interface
-        if (!$this->input->is_ajax_request()) {
-            $transaction_data['callbacks'] = [
-                'finish' => base_url('payment/finish'),
-                'unfinish' => base_url('payment/unfinish'),
-                'error' => base_url('payment/error')
-            ];
-        }
-
-        // Create Snap Token
-        $snap_token = $this->create_snap_token($transaction_data);
-
-        if ($snap_token) {
-            // Update subscription with snap token
-            $this->member_subscription->updateSubscription($subscription_id, ['snap_token' => $snap_token]);
-
-            $this->output
-                ->set_content_type('application/json')
-                ->set_output(json_encode([
-                    'status' => 'success',
-                    'snap_token' => $snap_token,
-                    'order_id' => $order_id,
-                    'subscription_id' => $subscription_id
-                ]));
-        } else {
-            // Log the error for debugging
-            error_log("Failed to create Midtrans snap token for order: " . $order_id);
-
-            $this->output
-                ->set_content_type('application/json')
-                ->set_output(json_encode([
-                    'status' => 'error',
-                    'message' => 'Failed to create payment token. Please check your internet connection and try again.',
-                    'debug_info' => [
-                        'order_id' => $order_id,
-                        'server_key_prefix' => substr($this->server_key, 0, 20) . '...',
-                        'midtrans_url' => $this->midtrans_url
-                    ]
-                ]));
-        }
-    }
-
-    // Create Snap Token using Midtrans API
-    private function create_snap_token($transaction_data)
-    {
-        $curl = curl_init();
-
-        curl_setopt_array($curl, [
-            CURLOPT_URL => $this->midtrans_url,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_ENCODING => '',
-            CURLOPT_MAXREDIRS => 10,
-            CURLOPT_TIMEOUT => 30,
-            CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-            CURLOPT_CUSTOMREQUEST => 'POST',
-            CURLOPT_POSTFIELDS => json_encode($transaction_data),
-            CURLOPT_HTTPHEADER => [
-                'Accept: application/json',
-                'Content-Type: application/json',
-                'Authorization: Basic ' . base64_encode($this->server_key . ':')
-            ],
-            CURLOPT_SSL_VERIFYPEER => false, // For local development
-            CURLOPT_SSL_VERIFYHOST => false  // For local development
+        $request->validate([
+            'plan_id'   => 'required|integer',
+            'member_id' => 'required|integer'
         ]);
 
-        $response = curl_exec($curl);
-        $http_code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-        $curl_error = curl_error($curl);
-        curl_close($curl);
+        $plan = MembershipPlan::find($request->plan_id);
+        $member = GymMember::with('user')->find($request->member_id);
 
-        // Log the response for debugging
-        error_log("Midtrans API Response: HTTP $http_code");
-        error_log("Midtrans API Response Body: " . $response);
-        error_log("Midtrans API URL: " . $this->midtrans_url);
-        error_log("Transaction Data: " . json_encode($transaction_data));
-
-        if ($curl_error) {
-            error_log("CURL Error: " . $curl_error);
-            return null;
+        if (!$plan || !$member) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Plan or Member not found'
+            ], 404);
         }
 
-        if ($http_code == 201) {
-            $result = json_decode($response, true);
-            return $result['token'] ?? null;
-        } else {
-            error_log("Midtrans API Error: HTTP $http_code - " . $response);
-            return null;
-        }
-    }
+        $orderId = 'GYM-' . $member->member_code . '-' . time();
 
-    // Payment notification webhook
-    public function notification()
-    {
-        $json_result = file_get_contents('php://input');
-        $result = json_decode($json_result, true);
+        // Create subscription
+        $subscription = MemberSubscription::create([
+            'member_id' => $member->id,
+            'membership_plan_id' => $plan->id,
+            'start_date' => now()->toDateString(),
+            'end_date' => now()->addMonths($plan->duration_months),
+            'amount_paid' => $plan->price,
+            'payment_status' => 'Pending',
+            'payment_method' => 'midtrans',
+            'order_id' => $orderId,
+            'created_at' => now()
+        ]);
 
-        if (!$result) {
-            http_response_code(400);
-            echo 'Invalid JSON';
-            return;
-        }
+        $payload = [
+            'transaction_details' => [
+                'order_id' => $orderId,
+                'gross_amount' => (int)$plan->price
+            ],
 
-        $order_id = $result['order_id'];
-        $status_code = $result['status_code'];
-        $gross_amount = $result['gross_amount'];
-        $signature_key = $result['signature_key'];
+            'customer_details' => [
+                'first_name' => $member->user->name ?? 'Member',
+                'email' => $member->user->email ?? 'member@gym.com',
+                'phone' => $member->phone ?? '08123456789'
+            ],
 
-        // Verify signature
-        $input = $order_id . $status_code . $gross_amount . $this->server_key;
-        $signature = openssl_digest($input, 'sha512');
-
-        if ($signature != $signature_key) {
-            http_response_code(400);
-            echo 'Invalid signature';
-            return;
-        }
-
-        // Get subscription by order_id
-        $subscription = $this->member_subscription->getSubscriptionByOrderId($order_id);
-        if (!$subscription) {
-            http_response_code(404);
-            echo 'Subscription not found';
-            return;
-        }
-
-        $transaction_status = $result['transaction_status'];
-        $fraud_status = $result['fraud_status'] ?? '';
-
-        // Update subscription status based on transaction status
-        if ($transaction_status == 'capture') {
-            if ($fraud_status == 'challenge') {
-                $payment_status = 'Challenge';
-            } else if ($fraud_status == 'accept') {
-                $payment_status = 'Paid';
-            }
-        } else if ($transaction_status == 'settlement') {
-            $payment_status = 'Paid';
-        } else if ($transaction_status == 'cancel' || $transaction_status == 'deny' || $transaction_status == 'expire') {
-            $payment_status = 'Failed';
-        } else if ($transaction_status == 'pending') {
-            $payment_status = 'Pending';
-        } else {
-            $payment_status = 'Unknown';
-        }
-
-        // Update subscription
-        $update_data = [
-            'payment_status' => $payment_status,
-            'transaction_status' => $transaction_status,
-            'payment_date' => ($payment_status == 'Paid') ? date('Y-m-d H:i:s') : null
+            'item_details' => [[
+                'id' => 'membership_' . $plan->id,
+                'price' => (int)$plan->price,
+                'quantity' => 1,
+                'name' => $plan->plan_name
+            ]]
         ];
 
-        $this->member_subscription->updateSubscription($subscription['id'], $update_data);
+        $snapToken = $this->createSnapToken($payload);
 
-        echo 'OK';
-    }
-
-    // Payment finish page
-    public function finish()
-    {
-        $order_id = $this->input->get('order_id');
-        $status_code = $this->input->get('status_code');
-        $transaction_status = $this->input->get('transaction_status');
-
-        $data['title'] = 'Payment Result';
-        $data['order_id'] = $order_id;
-        $data['status_code'] = $status_code;
-        $data['transaction_status'] = $transaction_status;
-
-        // Get subscription details
-        if ($order_id) {
-            $data['subscription'] = $this->member_subscription->getSubscriptionByOrderId($order_id);
+        if (!$snapToken) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed create payment token'
+            ], 500);
         }
 
-        $this->load->view('payment/finish', $data);
+        $subscription->update([
+            'snap_token' => $snapToken
+        ]);
+
+        return response()->json([
+            'status' => 'success',
+            'snap_token' => $snapToken,
+            'order_id' => $orderId,
+            'subscription_id' => $subscription->id
+        ]);
     }
 
-    // Payment unfinish page
-    public function unfinish()
+    // ===============================
+    // CREATE SNAP TOKEN
+    // ===============================
+    private function createSnapToken(array $data)
     {
-        $data['title'] = 'Payment Unfinished';
-        $this->load->view('payment/unfinish', $data);
+        try {
+
+            $response = Http::withBasicAuth($this->serverKey, '')
+                ->withHeaders([
+                    'Accept' => 'application/json'
+                ])
+                ->post($this->midtransUrl, $data);
+
+            Log::info('Midtrans Response', $response->json());
+
+            if ($response->status() == 201) {
+                return $response->json('token');
+            }
+
+            return null;
+
+        } catch (\Exception $e) {
+
+            Log::error('Midtrans Error: ' . $e->getMessage());
+
+            return null;
+        }
     }
 
-    // Payment error page
-    public function error()
+    // ===============================
+    // WEBHOOK NOTIFICATION
+    // ===============================
+    public function notification(Request $request)
     {
-        $data['title'] = 'Payment Error';
-        $this->load->view('payment/error', $data);
+        $data = $request->all();
+
+        $signature = hash(
+            'sha512',
+            $data['order_id'] .
+            $data['status_code'] .
+            $data['gross_amount'] .
+            $this->serverKey
+        );
+
+        if ($signature !== $data['signature_key']) {
+            return response('Invalid signature', 400);
+        }
+
+        $subscription = MemberSubscription::where('order_id', $data['order_id'])->first();
+
+        if (!$subscription) {
+            return response('Not found', 404);
+        }
+
+        $status = match ($data['transaction_status']) {
+
+            'capture' => $data['fraud_status'] === 'accept' ? 'Paid' : 'Challenge',
+
+            'settlement' => 'Paid',
+
+            'pending' => 'Pending',
+
+            'deny', 'cancel', 'expire' => 'Failed',
+
+            default => 'Unknown'
+        };
+
+        $subscription->update([
+            'payment_status' => $status,
+            'transaction_status' => $data['transaction_status'],
+            'payment_date' => $status === 'Paid' ? now() : null
+        ]);
+
+        return response('OK');
     }
 
-    // Get Midtrans client key for frontend
-    public function get_client_key()
+    // ===============================
+    // FINISH PAGE
+    // ===============================
+    public function finish(Request $request)
     {
-        $this->output
-            ->set_content_type('application/json')
-            ->set_output(json_encode(['client_key' => $this->client_key]));
+        $subscription = MemberSubscription::where('order_id', $request->order_id)->first();
+
+        return view('payment.finish', [
+            'title' => 'Payment Result',
+            'subscription' => $subscription,
+            'order_id' => $request->order_id,
+            'status_code' => $request->status_code,
+            'transaction_status' => $request->transaction_status
+        ]);
     }
 
-    // Test Midtrans connection
-    public function test_connection()
+    // ===============================
+    // CLIENT KEY
+    // ===============================
+    public function getClientKey()
     {
-        // Simple test transaction data
-        $test_data = [
+        return response()->json([
+            'client_key' => $this->clientKey
+        ]);
+    }
+
+    // ===============================
+    // TEST CONNECTION
+    // ===============================
+    public function test()
+    {
+        $payload = [
             'transaction_details' => [
                 'order_id' => 'TEST-' . time(),
                 'gross_amount' => 10000
-            ],
-            'customer_details' => [
-                'first_name' => 'Test User',
-                'email' => 'test@example.com',
-                'phone' => '08123456789'
-            ],
-            'item_details' => [
-                [
-                    'id' => 'test_item',
-                    'price' => 10000,
-                    'quantity' => 1,
-                    'name' => 'Test Membership'
-                ]
             ]
         ];
 
-        $snap_token = $this->create_snap_token($test_data);
+        $token = $this->createSnapToken($payload);
 
-        $this->output
-            ->set_content_type('application/json')
-            ->set_output(json_encode([
-                'status' => $snap_token ? 'success' : 'failed',
-                'message' => $snap_token ? 'Midtrans connection successful' : 'Midtrans connection failed',
-                'snap_token' => $snap_token ? substr($snap_token, 0, 20) . '...' : null,
-                'server_key_prefix' => substr($this->server_key, 0, 20) . '...',
-                'client_key_prefix' => substr($this->client_key, 0, 20) . '...',
-                'midtrans_url' => $this->midtrans_url,
-                'test_data' => $test_data
-            ]));
-    }
-
-    // Create payment-related columns in member_subscriptions table
-    private function create_payment_columns()
-    {
-        // Check if columns exist, if not add them
-        $fields = $this->db->field_data('member_subscriptions');
-        $existing_fields = array_column($fields, 'name');
-
-        $new_fields = [];
-
-        if (!in_array('order_id', $existing_fields)) {
-            $new_fields['order_id'] = [
-                'type' => 'VARCHAR',
-                'constraint' => 100,
-                'null' => TRUE
-            ];
-        }
-
-        if (!in_array('snap_token', $existing_fields)) {
-            $new_fields['snap_token'] = [
-                'type' => 'TEXT',
-                'null' => TRUE
-            ];
-        }
-
-        if (!in_array('transaction_status', $existing_fields)) {
-            $new_fields['transaction_status'] = [
-                'type' => 'VARCHAR',
-                'constraint' => 50,
-                'null' => TRUE
-            ];
-        }
-
-        if (!in_array('payment_method', $existing_fields)) {
-            $new_fields['payment_method'] = [
-                'type' => 'VARCHAR',
-                'constraint' => 50,
-                'null' => TRUE
-            ];
-        }
-
-        if (!in_array('created_at', $existing_fields)) {
-            $new_fields['created_at'] = [
-                'type' => 'DATETIME',
-                'null' => TRUE
-            ];
-        }
-
-        if (!empty($new_fields)) {
-            $this->dbforge->add_column('member_subscriptions', $new_fields);
-        }
-    }
-
-    // Debug payment creation
-    public function debug_payment()
-    {
-        $plan_id = $this->input->get('plan_id') ?: 1;
-        $member_id = $this->input->get('member_id') ?: 1;
-
-        $debug_info = [];
-
-        // Test 1: Check plan
-        $plan = $this->membership_plan->getPlanById($plan_id);
-        $debug_info['plan'] = $plan ? 'Found' : 'Not found';
-        $debug_info['plan_data'] = $plan;
-
-        // Test 2: Check member
-        $member = $this->gym_member->getMemberById($member_id);
-        $debug_info['member'] = $member ? 'Found' : 'Not found';
-        $debug_info['member_data'] = $member;
-
-        // Test 3: Check user
-        if ($member) {
-            $user = $this->db->get_where('user', ['id' => $member['user_id']])->row_array();
-            $debug_info['user'] = $user ? 'Found' : 'Not found';
-            $debug_info['user_data'] = $user;
-        }
-
-        // Test 4: Configuration
-        $debug_info['config'] = [
-            'server_key_prefix' => substr($this->server_key, 0, 20) . '...',
-            'client_key_prefix' => substr($this->client_key, 0, 20) . '...',
-            'midtrans_url' => $this->midtrans_url,
-            'is_production' => $this->is_production
-        ];
-
-        $this->output
-            ->set_content_type('application/json')
-            ->set_output(json_encode($debug_info, JSON_PRETTY_PRINT));
+        return response()->json([
+            'status' => $token ? 'success' : 'failed',
+            'token' => $token
+        ]);
     }
 }

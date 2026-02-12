@@ -13,8 +13,9 @@ use App\Http\Controllers\{
     PaymentController,
     MemberController,
     GymController,
-    InhabitantController
+    InhabitantController,
 };
+
 
 /*
 |--------------------------------------------------------------------------
@@ -33,6 +34,9 @@ Route::post('/contact/send', [HomeController::class, 'sendMessage'])->name('cont
 
 Route::get('/join', [HomeController::class, 'join']);
 
+Route::get('/join', [HomeController::class, 'join']);
+
+
 
 /*
 |--------------------------------------------------------------------------
@@ -43,10 +47,13 @@ Route::get('/join', [HomeController::class, 'join']);
 Route::get('/login', [AuthController::class, 'loginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
 
-Route::get('/register', [AuthController::class, 'registerForm']);
+Route::get('/register', [AuthController::class, 'registerForm'])->name('register');
 Route::post('/register', [AuthController::class, 'register']);
+Route::get('/auth/registration', [AuthController::class, 'registerForm']);
+Route::post('/auth/registration', [AuthController::class, 'register']);
 
-Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
+
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 
 /*
@@ -87,7 +94,7 @@ Route::post('/payment/notification', [PaymentController::class, 'notification'])
 */
 
 Route::prefix('member')
-    ->middleware(['auth', 'role:member'])
+    ->middleware(['auth', 'role:user'])
     ->group(function () {
 
     Route::get('/', [MemberController::class, 'index'])
@@ -99,7 +106,7 @@ Route::prefix('member')
     Route::post('/profile', [MemberController::class, 'updateProfile']);
 
     Route::get('/plans', [MemberController::class, 'membershipPlans'])
-        ->name('member.plans');
+        ->name('plans');
 
     Route::get('/subscriptions', [MemberController::class, 'mySubscriptions'])
         ->name('member.subscriptions');
@@ -149,6 +156,34 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::post('/members/update/{id}', [GymController::class, 'updateMember']);
 
         Route::delete('/members/{id}', [GymController::class, 'deleteMember']);
+
+        // Subscriptions routes
+        Route::get('/subscriptions', [GymController::class, 'subscriptions'])
+            ->name('subscriptions.index');
+
+        Route::get('/subscriptions/create', [GymController::class, 'createSubscription'])
+            ->name('subscriptions.create');
+
+        Route::post('/subscriptions/store', [GymController::class, 'storeSubscription'])
+            ->name('subscriptions.store');
+
+        Route::get('/subscriptions/edit/{id}', [GymController::class, 'editSubscription'])
+            ->name('subscriptions.edit');
+
+        Route::post('/subscriptions/update/{id}', [GymController::class, 'updateSubscription'])
+            ->name('subscriptions.update');
+
+        Route::delete('/subscriptions/{id}', [GymController::class, 'deleteSubscription'])
+            ->name('subscriptions.destroy');
+
+        Route::get('/subscriptions/{id}', [GymController::class, 'showSubscription'])
+            ->name('subscriptions.show');
+
+        Route::get('/subscriptions/{id}/pay', [GymController::class, 'paySubscription'])
+            ->name('subscriptions.pay');
+
+        Route::get('/subscriptions/{id}/renew', [GymController::class, 'renewSubscription'])
+            ->name('subscriptions.renew');
     });
 
 });

@@ -10,14 +10,8 @@ class User extends Authenticatable
 {
     use HasFactory, Notifiable;
 
-    /**
-     * Nama tabel (karena bukan "users")
-     */
-    protected $table = 'user';
+    // HAPUS protected $table
 
-    /**
-     * Kolom yang boleh diisi mass assignment
-     */
     protected $fillable = [
         'name',
         'email',

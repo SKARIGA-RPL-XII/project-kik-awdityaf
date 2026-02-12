@@ -48,4 +48,20 @@ class MembershipPlan extends Model
     {
         return self::findOrFail($id)->delete();
     }
+
+    /**
+     * Scope to get active membership plans
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', 1);
+    }
+
+    /**
+     * Scope to order plans by price
+     */
+    public function scopeOrderPrice($query)
+    {
+        return $query->orderBy('price');
+    }
 }

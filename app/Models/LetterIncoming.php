@@ -2,16 +2,26 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class LetterIncoming extends Model
 {
-    protected $table = 'letter_incomings';
+    use HasFactory;
 
     protected $fillable = [
-        'letterdate',
-        // kolom lain
+        'letter_number',
+        'letter_date',
+        'sender',
+        'subject',
+        'description',
+        'file_path',
+        'status',
+        'user_id',
     ];
 
-    public $timestamps = false;
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

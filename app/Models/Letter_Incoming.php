@@ -9,7 +9,7 @@ class LetterIncoming extends Model
     protected $table = 'letter_incomings';
 
     protected $fillable = [
-        'letterdate',
+        'letter_date',
         'letternumber',
         'letterorigin',
         'lettersubject',

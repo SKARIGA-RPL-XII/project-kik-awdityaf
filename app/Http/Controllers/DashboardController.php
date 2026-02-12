@@ -20,27 +20,27 @@ class DashboardController extends Controller
         // ===============================
         // Total surat masuk bulan ini
         // ===============================
-        $lettermonth = LetterIncoming::whereMonth('letterdate', $currentMonth)
-                        ->whereYear('letterdate', $currentYear)
+        $lettermonth = LetterIncoming::whereMonth('letter_date', $currentMonth)
+                        ->whereYear('letter_date', $currentYear)
                         ->count();
 
         // ===============================
         // Total surat keluar bulan ini
         // ===============================
-        $letterm = LetterOutgoing::whereMonth('letterdate', $currentMonth)
-                        ->whereYear('letterdate', $currentYear)
+        $letterm = LetterOutgoing::whereMonth('letter_date', $currentMonth)
+                        ->whereYear('letter_date', $currentYear)
                         ->count();
 
         // ===============================
         // Total surat masuk tahun ini
         // ===============================
-        $letteryear = LetterIncoming::whereYear('letterdate', $currentYear)
+        $letteryear = LetterIncoming::whereYear('letter_date', $currentYear)
                         ->count();
 
         // ===============================
         // Total surat keluar tahun ini
         // ===============================
-        $lettery = LetterOutgoing::whereYear('letterdate', $currentYear)
+        $lettery = LetterOutgoing::whereYear('letter_date', $currentYear)
                         ->count();
 
         // ===============================
@@ -49,8 +49,8 @@ class DashboardController extends Controller
         $monthlyCounts = [];
 
         for ($i = 1; $i <= 6; $i++) {
-            $monthlyCounts[] = LetterIncoming::whereMonth('letterdate', $i)
-                                ->whereYear('letterdate', $currentYear)
+            $monthlyCounts[] = LetterIncoming::whereMonth('letter_date', $i)
+                                ->whereYear('letter_date', $currentYear)
                                 ->count();
         }
 
@@ -71,7 +71,7 @@ class DashboardController extends Controller
         // ===============================
         $letterstatus = LetterOutgoing::where('is_tindak', 1)->count();
 
-        return view('dashboard.index', compact(
+        return view('member.dashboard', compact(
             'title',
             'lettermonth',
             'letterm',

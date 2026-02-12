@@ -4,7 +4,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>{{ $title ?? 'FitGym' }}</title>
 
     <!-- Bootstrap CSS -->
@@ -284,6 +283,25 @@
         color: #666 !important;
     }
 
+    .auth-wrapper {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 15px;
+    }
+
+    .auth-card {
+        width: 100%;
+        max-width: 420px;
+    }
+
+    .auth-card-large {
+        width: 100%;
+        max-width: 520px;
+    }
+
+
     /* RESPONSIVE */
     @media (max-width: 768px) {
         .hero-title {
@@ -301,9 +319,46 @@
         .pricing-card {
             padding: 30px 20px;
         }
+
+        .gym-card {
+            background-color: #0f1419;
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .gym-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.8), transparent);
+            opacity: 0.8;
+        }
+
+        .gym-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(255, 0, 110, 0.6), transparent);
+            opacity: 0.6;
+        }
+
+        /* Efek hover supaya lebih hidup */
+        .gym-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.7), inset 0 0 40px rgba(0, 212, 255, 0.25);
+        }
+
     }
     </style>
-
 </head>
 
 <body>
@@ -312,13 +367,9 @@
         @yield('content')
     </main>
 
-
-
     <!-- JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-
     <script>
     AOS.init({
         duration: 1000,

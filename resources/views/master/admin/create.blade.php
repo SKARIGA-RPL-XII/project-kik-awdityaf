@@ -31,10 +31,19 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="email">Email</label>
-                    <input type="email" class="form-control @error('email') is-invalid @enderror" id="email"
-                        name="email" value="{{ old('email') }}" required>
-                    @error('email')
+                    <label for="phonenumber">Phone Number</label>
+                    <input type="text" class="form-control @error('phonenumber') is-invalid @enderror" id="phonenumber"
+                        name="phonenumber" value="{{ old('phonenumber') }}" required>
+                    @error('phonenumber')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" class="form-control @error('username') is-invalid @enderror" id="username"
+                        name="username" value="{{ old('username') }}" required>
+                    @error('username')
                     <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
@@ -55,19 +64,10 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="phone">Phone</label>
-                    <input type="text" class="form-control @error('phone') is-invalid @enderror" id="phone" name="phone"
-                        value="{{ old('phone') }}">
-                    @error('phone')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                <div class="form-group">
-                    <label for="address">Address</label>
-                    <textarea class="form-control @error('address') is-invalid @enderror" id="address" name="address"
-                        rows="3">{{ old('address') }}</textarea>
-                    @error('address')
+                    <label for="job">Job</label>
+                    <input type="text" class="form-control @error('job') is-invalid @enderror" id="job" name="job"
+                        value="{{ old('job') }}" required>
+                    @error('job')
                     <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>

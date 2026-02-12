@@ -295,4 +295,40 @@ class GymController extends Controller
         return redirect()->route('subscriptions.index')
             ->with('success', 'Subscription diperpanjang');
     }
+
+    // ================= ATTENDANCE =================
+    public function attendance()
+    {
+        $attendances = Attendance::with('member.user')->latest()->get();
+        
+        // Calculate stats
+        $today = now()->toDateString();
+        $attendance_stats = [
+            'today' => Attendance::whereDate('date', $today)->count(),
+            'currently_in_gym' => Attendance::whereDate('date', $today)
+                ->whereNull('check_out_time')
+                ->count(),
+            'this_month' => Attendance::whereMonth('date', now()->month)
+                ->whereYear('date', now()->year)
+                ->count(),
+            'avg_daily' => Attendance::whereMonth('date', now()->month)
+                ->whereYear('date', now()->year)
+                ->selectRaw('COUNT(*) as total, COUNT(DISTINCT date) as days')
+                ->first(),
+        ];
+        
+        if ($attendance_stats['avg_daily']) {
+            $attendance_stats['avg_daily'] = $attendance_stats['avg_daily']->total / max(1, $attendance_stats['avg_daily']->days);
+        } else {
+            $attendance_stats['avg_daily'] = 0;
+        }
+        
+        return view('gym.attendance.index', compact('attendances', 'attendance_stats'));
+    }
+
+    // ================= SETTINGS =================
+    public function settings()
+    {
+        return view('gym.settings.index');
+    }
 }

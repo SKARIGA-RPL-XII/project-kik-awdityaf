@@ -159,7 +159,7 @@
             </div>
 
             <nav class="mt-3">
-                <a href="{{ route('admin.dashboard') }}">
+                <a href="{{ route('admin.index') }}">
                     <i class="fas fa-tachometer-alt mr-2 gym-accent"></i> Dashboard
                 </a>
                 <a href="{{ url('admin/members') }}">

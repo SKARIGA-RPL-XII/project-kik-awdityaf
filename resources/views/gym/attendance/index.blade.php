@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+@extends('layouts.app')
 
 @section('title', 'Gym Attendance')
 
@@ -167,13 +167,13 @@
 
                 <tbody>
 
-                    @forelse ($attendance as $record)
+                    @forelse ($attendances as $record)
 
                     <tr>
 
                         <td>
-                            <strong>{{ $record->member_name ?? 'Unknown' }}</strong><br>
-                            <small class="text-muted">{{ $record->member_code ?? 'N/A' }}</small>
+                            <strong>{{ $record->member->user->name ?? 'Unknown' }}</strong><br>
+                            <small class="text-muted">{{ $record->member->member_code ?? 'N/A' }}</small>
                         </td>
 
 

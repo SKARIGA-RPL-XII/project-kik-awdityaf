@@ -1,41 +1,25 @@
 @extends('layouts.member.app')
 
+
 @section('content')
 
-
 <!-- Welcome Section -->
-<div class="card-gym shadow mb-4" style="background-color: #0f1419; border-left: 4px solid #ff006e;">
-    <div class="p-4" style="background: linear-gradient(135deg, rgba(0,212,255,0.1) 0%, rgba(255,0,110,0.1) 100%);">
+<div class="card-gym shadow mb-4" style="border-left: 4px solid #ff006e;">
+    <div class="p-4"
+        style="background: linear-gradient(135deg, rgba(0,212,255,0.1) 0%, rgba(255,0,110,0.1) 100%); border-radius: 8px;">
         <div class="row align-items-center">
             <div class="col">
                 <h2 class="gym-accent font-weight-bold mb-2">
-                    <i class="fas fa-dumbbell mr-2"></i>Welcome back, {{ $user['name'] ?? 'Member' }}!
+                    <i class="fas fa-dumbbell mr-2"></i>Gym Dashboard
                 </h2>
-                <p class="text-light mb-2">
-                    💪 Ready to crush your workout today?
+                <p class="text-light-custom mb-2" style="opacity: 0.8;">
+                    💪 Manage your gym operations efficiently
                 </p>
-                @if(isset($member['member_code']))
-                <small class="text-info">
-                    Member ID: <strong>#{{ $member['member_code'] }}</strong>
-                </small>
-                @endif
             </div>
             <div class="col-auto">
-                @if($isInGym ?? false)
-                <form action="{{ url('member/check-out') }}" method="POST" class="d-inline">
-                    @csrf
-                    <button class="btn btn-gym-secondary btn-lg rounded-pill">
-                        <i class="fas fa-sign-out-alt mr-2"></i>Check Out
-                    </button>
-                </form>
-                @else
-                <form action="{{ url('member/check-in') }}" method="POST" class="d-inline">
-                    @csrf
-                    <button class="btn btn-gym-primary btn-lg rounded-pill">
-                        <i class="fas fa-sign-in-alt mr-2"></i>Check In
-                    </button>
-                </form>
-                @endif
+                <a href="#" class="btn btn-gym-primary btn-lg rounded-pill">
+                    <i class="fas fa-user-plus mr-2"></i>Add Member
+                </a>
             </div>
         </div>
     </div>
@@ -43,277 +27,321 @@
 
 <!-- Status Cards Row -->
 <div class="row">
-
-    <!-- Membership Status Card -->
+    <!-- Active Members -->
     <div class="col-xl-3 col-md-6 mb-4">
-        <div
-            class="card border-left-<?= isset($current_subscription) && $current_subscription ? 'success' : 'danger'; ?> shadow h-100 py-2">
+        <div class="card-gym shadow h-100 py-2">
             <div class="card-body">
                 <div class="row no-gutters align-items-center">
                     <div class="col mr-2">
-                        <div
-                            class="text-xs font-weight-bold text-<?= isset($current_subscription) && $current_subscription ? 'success' : 'danger'; ?> text-uppercase mb-1">
-                            Membership Status</div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">
-                            <?= isset($current_subscription) && $current_subscription ? 'Active' : 'Inactive'; ?>
-                        </div>
-                        <?php if (isset($current_subscription) && $current_subscription): ?>
-                        <div class="text-xs text-muted">Expires:
-                            <?= date('M d, Y', strtotime($current_subscription['end_date'])); ?></div>
-                        <?php endif; ?>
+                        <div class="text-xs font-weight-bold gym-accent text-uppercase mb-1">Active
+                            Members</div>
+                        <div class="h5 mb-0 font-weight-bold text-light-custom">142</div>
                     </div>
                     <div class="col-auto">
-                        <i class="fas fa-id-card fa-2x text-gray-300"></i>
+                        <i class="fas fa-users fa-2x gym-accent" style="opacity: 0.7;"></i>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Current Plan Card -->
+    <!-- New Members -->
     <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-left-info shadow h-100 py-2">
+        <div class="card-gym shadow h-100 py-2" style="border-left: 4px solid #ff006e;">
             <div class="card-body">
                 <div class="row no-gutters align-items-center">
                     <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                            Current Plan</div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">
-                            <?= isset($current_subscription['plan_name']) ? $current_subscription['plan_name'] : 'No Plan'; ?>
-                        </div>
+                        <div class="text-xs font-weight-bold gym-accent-secondary text-uppercase mb-1">
+                            New Members (This Month)</div>
+                        <div class="h5 mb-0 font-weight-bold text-light-custom">24</div>
                     </div>
                     <div class="col-auto">
-                        <i class="fas fa-tags fa-2x text-gray-300"></i>
+                        <i class="fas fa-user-plus fa-2x gym-accent-secondary" style="opacity: 0.7;"></i>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Attendance Rate Card -->
+    <!-- Revenue -->
     <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-left-warning shadow h-100 py-2">
+        <div class="card-gym shadow h-100 py-2">
             <div class="card-body">
                 <div class="row no-gutters align-items-center">
                     <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                            Attendance Rate (30 days)</div>
-                        <div class="row no-gutters align-items-center">
-                            <div class="col-auto">
-                                <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">
-                                    <?= isset($attendance_rate) ? $attendance_rate : 0; ?>%</div>
-                            </div>
-                            <div class="col">
-                                <div class="progress progress-sm mr-2">
-                                    <div class="progress-bar bg-warning" role="progressbar"
-                                        style="width: <?= isset($attendance_rate) ? $attendance_rate : 0; ?>%"
-                                        aria-valuenow="<?= isset($attendance_rate) ? $attendance_rate : 0; ?>"
-                                        aria-valuemin="0" aria-valuemax="100"></div>
-                                </div>
-                            </div>
-                        </div>
+                        <div class="text-xs font-weight-bold gym-accent text-uppercase mb-1">Monthly
+                            Revenue</div>
+                        <div class="h5 mb-0 font-weight-bold text-light-custom">Rp 45.200.000</div>
                     </div>
                     <div class="col-auto">
-                        <i class="fas fa-calendar-check fa-2x text-gray-300"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>x
-
-    <!-- Status Card -->
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div
-            class="card border-left-<?= isset($is_in_gym) && $is_in_gym ? 'success' : 'secondary'; ?> shadow h-100 py-2">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div
-                            class="text-xs font-weight-bold text-<?= isset($is_in_gym) && $is_in_gym ? 'success' : 'secondary'; ?> text-uppercase mb-1">
-                            Current Status</div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">
-                            <?= isset($is_in_gym) && $is_in_gym ? 'In Gym' : 'Not In Gym'; ?>
-                        </div>
-                    </div>
-                    <div class="col-auto">
-                        <i
-                            class="fas fa-<?= isset($is_in_gym) && $is_in_gym ? 'check-circle' : 'times-circle'; ?> fa-2x text-gray-300"></i>
+                        <i class="fas fa-wallet fa-2x gym-accent" style="opacity: 0.7;"></i>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Attendance -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card-gym shadow h-100 py-2" style="border-left: 4px solid #ff006e;">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold gym-accent-secondary text-uppercase mb-1">
+                            Today's Attendance</div>
+                        <div class="h5 mb-0 font-weight-bold text-light-custom">58</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-calendar-check fa-2x gym-accent-secondary" style="opacity: 0.7;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
-
-
-<div class="row mt-4">
-
-    <!-- Recent Attendance -->
-    <div class="col-lg-8 mb-4">
-        <div class="card-gym shadow">
-            <div class="p-4">
-                <h3 class="gym-accent font-weight-bold mb-4">
-                    <i class="fas fa-chart-line mr-2"></i>Recent Attendance
-                </h3>
-
-                @if(isset($recent_attendance) && count($recent_attendance) > 0)
-
-                <div class="table-responsive">
-                    <table class="table" style="color: #fff;">
-                        <thead>
-                            <tr style="border-bottom: 2px solid #00d4ff;">
-                                <th class="gym-accent">Date</th>
-                                <th class="gym-accent">Check In</th>
-                                <th class="gym-accent">Check Out</th>
-                                <th class="gym-accent">Duration</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach(array_slice($recent_attendance,0,5) as $attendance)
-                            <tr
-                                style="border-bottom: 1px solid rgba(0,212,255,0.2); background-color: rgba(0,212,255,0.03);">
-                                <td>{{ date('M d, Y', strtotime($attendance['date'])) }}</td>
-                                <td><span class="badge"
-                                        style="background-color: #00d4ff; color: #000;">{{ date('H:i', strtotime($attendance['check_in_time'])) }}</span>
-                                </td>
-                                <td>
-                                    @if($attendance['check_out_time'])
-                                    <span class="badge"
-                                        style="background-color: #ff006e; color: #fff;">{{ date('H:i', strtotime($attendance['check_out_time'])) }}</span>
-                                    @else
-                                    <span class="badge" style="background-color: #00d4ff; color: #000;">Still In
-                                        🔴</span>
-                                    @endif
-                                </td>
-                                <td>
-                                    @if($attendance['check_out_time'])
-                                    @php
-                                    $in = new DateTime($attendance['check_in_time']);
-                                    $out = new DateTime($attendance['check_out_time']);
-                                    $diff = $in->diff($out);
-                                    @endphp
-                                    <strong class="gym-accent-secondary">{{ $diff->format('%h:%I') }}</strong>
-                                    @else
-                                    -
-                                    @endif
-                                </td>
-                            </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-
-                @else
-
-                <div class="text-center py-5">
-                    <i class="fas fa-inbox" style="font-size: 48px; color: #00d4ff; opacity: 0.5;"></i>
-                    <p class="text-light mt-3 mb-3">No attendance records found</p>
-                    <a href="{{ url('member/check-in') }}" class="btn btn-gym-primary">Start Your First Workout</a>
-                </div>
-
-                @endif
-            </div>
-        </div>
-    </div>
-
-
-
-    <!-- Right Column -->
-    <div class="col-lg-4">
-
-        <!-- Quick Actions -->
+<!-- Charts -->
+<div class="row">
+    <!-- Growth -->
+    <div class="col-xl-8 col-lg-7">
         <div class="card-gym shadow mb-4">
-            <div class="p-4">
+            <div class="card-body">
                 <h3 class="gym-accent font-weight-bold mb-4">
-                    <i class="fas fa-flash mr-2"></i>Quick Actions
+                    <i class="fas fa-chart-line mr-2"></i>Member Growth Overview
                 </h3>
-                <ul class="list-group list-group-flush" style="background: transparent;">
-                    <li class="list-group-item"
-                        style="background: rgba(0,212,255,0.1); border-left: 3px solid #00d4ff; margin-bottom: 8px; border-radius: 4px;">
-                        <a href="{{ url('member/profile') }}" class="text-decoration-none text-light">
-                            <i class="fas fa-user mr-2 gym-accent"></i> Update Profile
-                        </a>
-                    </li>
-                    <li class="list-group-item"
-                        style="background: rgba(255,0,110,0.1); border-left: 3px solid #ff006e; margin-bottom: 8px; border-radius: 4px;">
-                        <a href="{{ url('member/plans') }}" class="text-decoration-none text-light">
-                            <i class="fas fa-tags mr-2" style="color: #ff006e;"></i> View Plans
-                        </a>
-                    </li>
-                    <li class="list-group-item"
-                        style="background: rgba(0,212,255,0.1); border-left: 3px solid #00d4ff; margin-bottom: 8px; border-radius: 4px;">
-                        <a href="{{ url('member/subscriptions') }}" class="text-decoration-none text-light">
-                            <i class="fas fa-credit-card mr-2 gym-accent"></i> My Subscriptions
-                        </a>
-                    </li>
-                    <li class="list-group-item"
-                        style="background: rgba(255,0,110,0.1); border-left: 3px solid #ff006e; margin-bottom: 8px; border-radius: 4px;">
-                        <a href="{{ url('member/attendance') }}" class="text-decoration-none text-light">
-                            <i class="fas fa-calendar mr-2" style="color: #ff006e;"></i> Attendance History
-                        </a>
-                    </li>
-                    <li class="list-group-item"
-                        style="background: rgba(0,212,255,0.1); border-left: 3px solid #00d4ff; border-radius: 4px;">
-                        <a href="{{ url('member/password') }}" class="text-decoration-none text-light">
-                            <i class="fas fa-lock mr-2 gym-accent"></i> Change Password
-                        </a>
-                    </li>
-                </ul>
+                <canvas id="memberGrowthChart" style="height: 300px;"></canvas>
             </div>
         </div>
-
-
-
-        <!-- Membership Info -->
-        @if(isset($current_subscription) && $current_subscription)
-
-        <div class="card-gym shadow" style="border-left: 4px solid #00d4ff;">
-            <div class="p-4">
-                <h3 class="gym-accent font-weight-bold mb-3">
-                    <i class="fas fa-star mr-2"></i>Current Membership
-                </h3>
-                <h5 class="text-light font-weight-bold">{{ $current_subscription['plan_name'] }}</h5>
-                <p class="text-info small mt-3" style="line-height: 1.8;">
-                    <i class="fas fa-calendar-alt mr-2"></i>Start:
-                    {{ date('M d, Y', strtotime($current_subscription['start_date'])) }}<br>
-                    <i class="fas fa-calendar-check mr-2"></i>End:
-                    {{ date('M d, Y', strtotime($current_subscription['end_date'])) }}<br>
-                    <i class="fas fa-money-bill mr-2"></i>Amount: Rp
-                    {{ number_format($current_subscription['amount_paid'],0,',','.') }}
-                </p>
-                @php
-                $days = (strtotime($current_subscription['end_date']) - time()) / 86400;
-                @endphp
-                @if($days > 0)
-                <div class="alert mt-3 mb-0"
-                    style="background-color: rgba(0,212,255,0.2); border-left: 3px solid #00d4ff; color: #00d4ff; border-radius: 4px;">
-                    <i class="fas fa-check-circle mr-2"></i>{{ ceil($days) }} days remaining
-                </div>
-                @else
-                <div class="alert mt-3 mb-0"
-                    style="background-color: rgba(255,0,110,0.2); border-left: 3px solid #ff006e; color: #ff006e; border-radius: 4px;">
-                    <i class="fas fa-exclamation-circle mr-2"></i>Membership expired
-                </div>
-                @endif
-            </div>
-        </div>
-
-        @else
-
-        <div class="card-gym shadow text-center">
-            <div class="p-4">
-                <i class="fas fa-inbox" style="font-size: 48px; color: #00d4ff; opacity: 0.5;"></i>
-                <p class="text-light mt-3 mb-3">No Active Membership</p>
-                <a href="{{ url('member/plans') }}" class="btn btn-gym-primary">Choose Your Plan</a>
-            </div>
-        </div>
-
-        @endif
-
     </div>
 
+    <!-- Distribution -->
+    <div class="col-xl-4 col-lg-5">
+        <div class="card-gym shadow mb-4" style="border-left: 4px solid #ff006e;">
+            <div class="card-body">
+                <h3 class="gym-accent-secondary font-weight-bold mb-4">
+                    <i class="fas fa-chart-pie mr-2"></i>Member Distribution
+                </h3>
+                <canvas id="memberDistributionChart" style="height: 300px;"></canvas>
+            </div>
+        </div>
+    </div>
 </div>
 
+<!-- Recent Members & Expiring -->
+<div class="row">
+    <!-- Recent Members -->
+    <div class="col-lg-6 mb-4">
+        <div class="card-gym shadow mb-4">
+            <div class="card-body">
+                <h3 class="gym-accent font-weight-bold mb-4">
+                    <i class="fas fa-users mr-2"></i>Recent New Members
+                </h3>
+
+                <div class="d-flex align-items-center mb-3"
+                    style="border-bottom: 1px solid rgba(0,212,255,0.2); padding-bottom: 15px;">
+                    <div class="bg-secondary rounded-circle mr-3 d-flex align-items-center justify-content-center"
+                        style="width: 40px; height: 40px;">
+                        <i class="fas fa-user text-light"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="font-weight-bold text-light-custom">Budi Santoso</div>
+                        <div class="text-muted-custom small">MEM-001 • Oct 24, 2023</div>
+                    </div>
+                    <span class="badge font-weight-bold" style="background-color: #28a745; color: #fff;">Active</span>
+                </div>
+
+                <div class="d-flex align-items-center mb-3"
+                    style="border-bottom: 1px solid rgba(0,212,255,0.2); padding-bottom: 15px;">
+                    <div class="bg-secondary rounded-circle mr-3 d-flex align-items-center justify-content-center"
+                        style="width: 40px; height: 40px;">
+                        <i class="fas fa-user text-light"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="font-weight-bold text-light-custom">Siti Aminah</div>
+                        <div class="text-muted-custom small">MEM-002 • Oct 23, 2023</div>
+                    </div>
+                    <span class="badge font-weight-bold" style="background-color: #28a745; color: #fff;">Active</span>
+                </div>
+
+                <div class="d-flex align-items-center mb-3"
+                    style="border-bottom: 1px solid rgba(0,212,255,0.2); padding-bottom: 15px;">
+                    <div class="bg-secondary rounded-circle mr-3 d-flex align-items-center justify-content-center"
+                        style="width: 40px; height: 40px;">
+                        <i class="fas fa-user text-light"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="font-weight-bold text-light-custom">Joko Anwar</div>
+                        <div class="text-muted-custom small">MEM-003 • Oct 22, 2023</div>
+                    </div>
+                    <span class="badge font-weight-bold" style="background-color: #28a745; color: #fff;">Active</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Expiring Subscriptions -->
+    <div class="col-lg-6 mb-4">
+        <div class="card-gym shadow mb-4" style="border-left: 4px solid #ff006e;">
+            <div class="card-body">
+                <h3 class="gym-accent-secondary font-weight-bold mb-4">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>Expiring Subscriptions
+                </h3>
+
+                <div class="d-flex align-items-center mb-3"
+                    style="border-bottom: 1px solid rgba(255,0,110,0.2); padding-bottom: 15px;">
+                    <i class="fas fa-exclamation-triangle text-warning mr-3" style="font-size: 24px;"></i>
+                    <div class="flex-grow-1">
+                        <div class="font-weight-bold text-light-custom">Rina Wati</div>
+                        <div class="text-muted-custom small">Annual Plan • Expires: Oct 30, 2023</div>
+                    </div>
+                    <a href="#" class="btn btn-gym-secondary btn-sm">
+                        <i class="fas fa-renew"></i> Renew
+                    </a>
+                </div>
+
+                <div class="d-flex align-items-center mb-3"
+                    style="border-bottom: 1px solid rgba(255,0,110,0.2); padding-bottom: 15px;">
+                    <i class="fas fa-exclamation-triangle text-warning mr-3" style="font-size: 24px;"></i>
+                    <div class="flex-grow-1">
+                        <div class="font-weight-bold text-light-custom">Doni Tata</div>
+                        <div class="text-muted-custom small">Monthly Plan • Expires: Nov 01, 2023</div>
+                    </div>
+                    <a href="#" class="btn btn-gym-secondary btn-sm">
+                        <i class="fas fa-renew"></i> Renew
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+@push('scripts')
+<!-- <script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Sample Data
+    const monthlyGrowth = [12, 19, 13, 25, 22, 30, 28, 35, 40, 45, 50, 60];
+    const maleCount = 65;
+    const femaleCount = 35;
+
+    // Global Chart Defaults for Dark Theme
+    Chart.defaults.color = '#aab2bd';
+    Chart.defaults.borderColor = 'rgba(255,255,255,0.05)';
+    Chart.defaults.font.family = "'Segoe UI', 'Helvetica', 'Arial', sans-serif";
+
+    // Member Growth Chart
+    const ctxGrowth = document.getElementById('memberGrowthChart').getContext('2d');
+
+    // Gradient Fill
+    let gradient = ctxGrowth.createLinearGradient(0, 0, 0, 400);
+    gradient.addColorStop(0, 'rgba(0, 212, 255, 0.5)');
+    gradient.addColorStop(1, 'rgba(0, 212, 255, 0.0)');
+
+    new Chart(ctxGrowth, {
+        type: 'line',
+        data: {
+            labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov",
+                "Dec"
+            ],
+            datasets: [{
+                label: 'New Members',
+                data: monthlyGrowth,
+                borderColor: '#00d4ff',
+                backgroundColor: gradient,
+                borderWidth: 2,
+                tension: 0.4,
+                fill: true,
+                pointBackgroundColor: '#0f1419',
+                pointBorderColor: '#00d4ff',
+                pointHoverBackgroundColor: '#00d4ff',
+                pointHoverBorderColor: '#fff',
+                pointRadius: 4,
+                pointHoverRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    labels: {
+                        color: '#00d4ff',
+                        font: {
+                            weight: 'bold'
+                        }
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(15, 20, 25, 0.9)',
+                    titleColor: '#00d4ff',
+                    bodyColor: '#fff',
+                    borderColor: 'rgba(0, 212, 255, 0.3)',
+                    borderWidth: 1
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(0, 212, 255, 0.1)'
+                    },
+                    ticks: {
+                        color: '#00d4ff'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    },
+                    ticks: {
+                        color: '#dbeef6'
+                    }
+                }
+            }
+        }
+    });
+
+    // Member Distribution Chart
+    new Chart(document.getElementById('memberDistributionChart'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Male', 'Female'],
+            datasets: [{
+                data: [maleCount, femaleCount],
+                backgroundColor: ['#00d4ff', '#ff006e'],
+                borderWidth: 0,
+                hoverOffset: 10
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        color: '#fff',
+                        padding: 20,
+                        font: {
+                            size: 14
+                        }
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(15, 20, 25, 0.9)',
+                    bodyColor: '#fff',
+                    borderColor: 'rgba(255, 255, 255, 0.1)',
+                    borderWidth: 1
+                }
+            },
+            cutout: '70%',
+            animation: {
+                animateScale: true,
+                animateRotate: true
+            }
+        }
+    });
+});
+</script> -->
+@endpush
 @endsection

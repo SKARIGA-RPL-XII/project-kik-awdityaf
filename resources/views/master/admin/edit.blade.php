@@ -18,24 +18,33 @@
             <h6 class="m-0 font-weight-bold text-primary">Admin Information</h6>
         </div>
         <div class="card-body">
-            <form action="{{ route('admin.update', $admin->id) }}" method="POST">
+            <form action="{{ route('admin.update', $user->id) }}" method="POST">
                 @csrf
                 @method('PUT')
 
                 <div class="form-group">
                     <label for="name">Full Name</label>
                     <input type="text" class="form-control @error('name') is-invalid @enderror" id="name" name="name"
-                        value="{{ old('name', $admin->name) }}" required>
+                        value="{{ old('name', $user->name) }}" required>
                     @error('name')
                     <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
 
                 <div class="form-group">
-                    <label for="email">Email</label>
-                    <input type="email" class="form-control @error('email') is-invalid @enderror" id="email"
-                        name="email" value="{{ old('email', $admin->email) }}" required>
-                    @error('email')
+                    <label for="phonenumber">Phone Number</label>
+                    <input type="text" class="form-control @error('phonenumber') is-invalid @enderror" id="phonenumber"
+                        name="phonenumber" value="{{ old('phonenumber', $user->phonenumber) }}" required>
+                    @error('phonenumber')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" class="form-control @error('username') is-invalid @enderror" id="username"
+                        name="username" value="{{ old('username', $user->username) }}" required>
+                    @error('username')
                     <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
@@ -55,19 +64,10 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="phone">Phone</label>
-                    <input type="text" class="form-control @error('phone') is-invalid @enderror" id="phone" name="phone"
-                        value="{{ old('phone', $admin->phone) }}">
-                    @error('phone')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                <div class="form-group">
-                    <label for="address">Address</label>
-                    <textarea class="form-control @error('address') is-invalid @enderror" id="address" name="address"
-                        rows="3">{{ old('address', $admin->address) }}</textarea>
-                    @error('address')
+                    <label for="job">Job</label>
+                    <input type="text" class="form-control @error('job') is-invalid @enderror" id="job" name="job"
+                        value="{{ old('job', $user->job) }}" required>
+                    @error('job')
                     <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>

@@ -147,11 +147,13 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::get('/members', [GymController::class, 'members'])
             ->name('gym.members');
 
-        Route::get('/members/add', [GymController::class, 'addMember']);
+        Route::get('/members/add', [GymController::class, 'addMember'])
+            ->name('gym.add_member');
 
         Route::post('/members/store', [GymController::class, 'storeMember']);
 
-        Route::get('/members/edit/{id}', [GymController::class, 'editMember']);
+        Route::get('/members/edit/{id}', [GymController::class, 'editMember'])
+            ->name('gym.edit_member');
 
         Route::post('/members/update/{id}', [GymController::class, 'updateMember']);
 
@@ -185,6 +187,22 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::get('/subscriptions/{id}/renew', [GymController::class, 'renewSubscription'])
             ->name('subscriptions.renew');
     });
+
+    // Admin members route
+    Route::get('/admin/members', [GymController::class, 'members'])
+        ->name('admin.members');
+
+    // Admin plans route
+    Route::get('/admin/plans', [GymController::class, 'subscriptions'])
+        ->name('admin.plans');
+
+    // Admin attendance route
+    Route::get('/admin/attendance', [GymController::class, 'attendance'])
+        ->name('admin.attendance');
+
+    // Admin settings route
+    Route::get('/admin/settings', [GymController::class, 'settings'])
+        ->name('admin.settings');
 
 });
 

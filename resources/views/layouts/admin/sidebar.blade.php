@@ -1,27 +1,27 @@
 <aside class="w-64 min-h-screen fixed" style="background: linear-gradient(180deg,#0f1419,#16213e); color: #e6eef2;">
 
     <style>
-        :root {
-            --gym-cyan: #00d4ff;
-            --gym-pink: #ff006e;
-        }
+    :root {
+        --gym-cyan: #00d4ff;
+        --gym-pink: #ff006e;
+    }
 
-        .admin-link {
-            display: block;
-            padding: 12px 18px;
-            color: #dbeef6;
-            border-left: 4px solid transparent;
-        }
+    .admin-link {
+        display: block;
+        padding: 12px 18px;
+        color: #dbeef6;
+        border-left: 4px solid transparent;
+    }
 
-        .admin-link:hover {
-            background: rgba(0, 212, 255, 0.03);
-            color: var(--gym-cyan);
-            border-left-color: var(--gym-cyan);
-        }
+    .admin-link:hover {
+        background: rgba(0, 212, 255, 0.03);
+        color: var(--gym-cyan);
+        border-left-color: var(--gym-cyan);
+    }
 
-        .gym-accent {
-            color: var(--gym-cyan);
-        }
+    .gym-accent {
+        color: var(--gym-cyan);
+    }
     </style>
 
     <!-- Logo -->
@@ -35,7 +35,7 @@
         <ul class="space-y-1">
 
             <li>
-                <a href="{{ route('admin.dashboard') }}" class="admin-link">
+                <a href="{{ route('admin.index') }}" class="admin-link">
                     <i class="fas fa-chart-line mr-2 gym-accent"></i> Dashboard
                 </a>
             </li>
@@ -64,11 +64,11 @@
                 </a>
             </li>
 
-            <li>
+            <!-- <li>
                 <a href="{{ route('admin.settings') }}" class="admin-link">
                     <i class="fas fa-cog mr-2 gym-accent"></i> Settings
                 </a>
-            </li>
+            </li> -->
 
         </ul>
     </nav>

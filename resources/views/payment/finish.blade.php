@@ -195,7 +195,7 @@
                                         </div>
 
                                         <div class="col-md-6 mb-2">
-                                            <a href="{{ url('member/membership_plans') }}"
+                                            <a href="{{ url('member/plans') }}"
                                                 class="btn btn-secondary btn-block">
 
                                                 <i class="fas fa-dumbbell mr-2"></i>

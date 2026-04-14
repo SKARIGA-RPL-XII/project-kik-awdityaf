@@ -93,8 +93,8 @@
             </li>
 
             <!-- Plans -->
-            <li class="nav-item {{ request()->segment(2) == 'membership_plans' ? 'active' : '' }}">
-                <a class="nav-link" href="{{ url('member/membership_plans') }}">
+            <li class="nav-item {{ request()->segment(2) == 'plans' ? 'active' : '' }}">
+                <a class="nav-link" href="{{ url('member/plans') }}">
                     <i class="fas fa-fw fa-tags"></i>
                     <span>Membership Plans</span>
                 </a>

@@ -14,6 +14,7 @@ class MembershipPlan extends Model
         'price',
         'duration_months',
         'description',
+        'features',
         'is_active',
     ];
 

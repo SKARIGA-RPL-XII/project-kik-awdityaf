@@ -64,7 +64,7 @@
                                     <div class="row">
 
                                         <div class="col-md-6 mb-2">
-                                            <a href="{{ url('member/membership_plans') }}"
+                                            <a href="{{ url('member/plans') }}"
                                                 class="btn btn-danger btn-block">
 
                                                 <i class="fas fa-redo mr-2"></i>

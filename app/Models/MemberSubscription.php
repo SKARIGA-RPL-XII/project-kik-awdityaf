@@ -24,8 +24,6 @@ class MemberSubscription extends Model
         'created_at'
     ];
 
-    public $timestamps = false;
-
     public function member()
     {
         return $this->belongsTo(Member::class, 'member_id');
@@ -42,7 +40,7 @@ class MemberSubscription extends Model
     public static function activeByMember($memberId)
     {
         return self::where('member_id', $memberId)
-            ->where('payment_status', 'COMPLETED')
+            ->where('payment_status', 'Paid')
             ->where('end_date', '>=', Carbon::today())
             ->with('plan')
             ->first();

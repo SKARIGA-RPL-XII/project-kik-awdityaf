@@ -447,6 +447,7 @@ class MemberController extends Controller
             'amount_paid'         => $plan->price,
             'payment_status'      => 'Paid',
             'payment_date'        => now(),
+            'payment_method'      => $request->payment_method,
         ]);
 
         return redirect()

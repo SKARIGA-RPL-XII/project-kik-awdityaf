@@ -15,7 +15,7 @@
                 </p>
             </div>
             <div class="col-auto">
-                <a href="{{ url('member/membership_plans') }}" class="btn btn-gym-secondary">
+                <a href="{{ url('member/plans') }}" class="btn btn-gym-secondary">
                     <i class="fas fa-tags mr-2"></i>
                     View Plans
                 </a>
@@ -127,7 +127,7 @@
                         You don't have any subscription history yet.
                     </p>
 
-                    <a href="{{ url('member/membership_plans') }}" class="btn btn-gym-secondary">
+                    <a href="{{ url('member/plans') }}" class="btn btn-gym-secondary">
                         <i class="fas fa-tags mr-2"></i>
                         View Membership Plans
                     </a>

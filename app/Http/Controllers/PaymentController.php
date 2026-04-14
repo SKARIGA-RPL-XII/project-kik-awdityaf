@@ -21,9 +21,9 @@ class PaymentController extends Controller
     {
         $this->middleware('auth');
 
-        $this->serverKey = config('services.midtrans.server_key');
-        $this->clientKey = config('services.midtrans.client_key');
-        $this->isProduction = config('services.midtrans.is_production');
+        $this->serverKey = config('services.midtrans.server_key') ?? '';
+        $this->clientKey = config('services.midtrans.client_key') ?? '';
+        $this->isProduction = (bool) config('services.midtrans.is_production', false);
 
         $this->midtransUrl = $this->isProduction
             ? 'https://app.midtrans.com/snap/v1/transactions'

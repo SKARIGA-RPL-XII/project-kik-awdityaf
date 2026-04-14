@@ -72,7 +72,7 @@
 
                                 <h5 class="card-title">Payment Information</h5>
 
-                                <form method="POST" action="{{ url('member/process_subscription') }}"
+                                <form method="POST" action="{{ url('member/subscribe') }}"
                                     id="subscriptionForm">
 
                                     @csrf
@@ -193,7 +193,7 @@
                                         </button>
 
 
-                                        <a href="{{ url('member/membership_plans') }}"
+                                        <a href="{{ url('member/plans') }}"
                                             class="btn btn-secondary btn-block mt-2">
 
                                             <i class="fas fa-arrow-left mr-2"></i>
@@ -224,7 +224,7 @@
 <script>
 let midtransClientKey = '';
 
-fetch("{{ url('payment/get_client_key') }}")
+fetch("{{ url('payment/client-key') }}")
     .then(res => res.json())
     .then(data => {
 
@@ -290,7 +290,7 @@ function processPayment() {
 
     if (paymentMethod === 'midtrans') {
 
-        fetch("{{ url('payment/create_transaction') }}", {
+        fetch("{{ url('payment/create') }}", {
 
                 method: 'POST',
 

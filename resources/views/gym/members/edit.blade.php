@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+@extends('layouts.app')
 
 @section('title', 'Edit Member')
 
@@ -8,7 +8,7 @@
 <div class="d-sm-flex align-items-center justify-content-between mb-4">
     <h1 class="h3 mb-0 text-gray-800">Edit Member</h1>
 
-    <a href="{{ route('members.index') }}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
+    <a href="{{ route('gym.members') }}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
         <i class="fas fa-arrow-left fa-sm text-white-50"></i> Back to Members
     </a>
 </div>
@@ -28,10 +28,10 @@
 
             <div class="card-body">
 
-                <form action="{{ route('members.update', $member->id) }}" method="POST" class="user">
+                <form action="{{ url('gym/members/update', $member->id) }}" method="POST" class="user">
 
                     @csrf
-                    @method('PUT')
+                    <!-- Leave POST since web.php expects post for update/{id} -->
 
                     <!-- NAME -->
                     <div class="form-group row">
@@ -151,7 +151,7 @@
 
                             <label>Join Date</label>
 
-                            <input type="date" class="form-control" value="{{ $member->join_date }}" readonly>
+                            <input type="date" class="form-control" value="{{ \Carbon\Carbon::parse($member->join_date)->format('Y-m-d') }}" readonly>
 
                         </div>
 
@@ -201,7 +201,7 @@
 
                         <div class="col-sm-6">
 
-                            <button class="btn btn-success btn-block">
+                            <button type="submit" class="btn btn-success btn-block">
                                 <i class="fas fa-save"></i> Update
                             </button>
 
@@ -209,7 +209,7 @@
 
                         <div class="col-sm-6">
 
-                            <a href="{{ route('members.index') }}" class="btn btn-secondary btn-block">
+                            <a href="{{ route('gym.members') }}" class="btn btn-secondary btn-block">
                                 Cancel
                             </a>
 
@@ -232,7 +232,7 @@
             <div class="card-body text-center">
 
                 <img width="80" height="80" class="rounded-circle mb-2"
-                    src="{{ asset('assets/img/profile/'.$member->image ?? 'default.jpg') }}">
+                    src="{{ asset('assets/img/profile/'.($member->image ?? 'default.jpg')) }}">
 
                 <h6>{{ $member->name }}</h6>
 
@@ -255,17 +255,17 @@
                     Subscriptions
                 </a>
 
-                <a href="{{ route('attendance.index',['member'=>$member->id]) }}"
+                <a href="{{ route('admin.attendance', ['member' => $member->id]) }}"
                     class="btn btn-outline-info btn-block mb-2">
                     Attendance
                 </a>
 
-                <form action="{{ route('members.destroy',$member->id) }}" method="POST">
+                <form action="{{ url('gym/members/'.$member->id) }}" method="POST">
 
                     @csrf
                     @method('DELETE')
 
-                    <button class="btn btn-outline-danger btn-block">
+                    <button type="submit" class="btn btn-outline-danger btn-block">
                         Delete
                     </button>
 

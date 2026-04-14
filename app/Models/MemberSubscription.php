@@ -24,6 +24,12 @@ class MemberSubscription extends Model
         'created_at'
     ];
 
+    protected $casts = [
+        'start_date' => 'date',
+        'end_date' => 'date',
+        'payment_date' => 'datetime',
+    ];
+
     public function member()
     {
         return $this->belongsTo(Member::class, 'member_id');

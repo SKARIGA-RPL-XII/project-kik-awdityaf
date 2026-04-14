@@ -106,6 +106,24 @@ class GymController extends Controller
     {
         $members = Member::with('user')->get();
 
+        $members->map(function ($member) {
+            $member->name = $member->user->name ?? 'Unknown';
+            $member->email = $member->user->email ?? '-';
+            $member->image = $member->user->image ?? 'default.jpg';
+
+            $activeSub = \App\Models\MemberSubscription::activeByMember($member->id);
+
+            if ($activeSub) {
+                $member->plan_name = $activeSub->plan->plan_name;
+                $member->membership_end = $activeSub->end_date;
+            } else {
+                $member->plan_name = null;
+                $member->membership_end = null;
+            }
+
+            return $member;
+        });
+
         return view('gym.members.index', compact('members'));
     }
 
@@ -141,6 +159,26 @@ class GymController extends Controller
 
         return redirect()->route('gym.members')
             ->with('success', 'Member berhasil ditambahkan');
+    }
+
+    // ================= VIEW MEMBER DETAILS =================
+    public function getMemberDetails($id)
+    {
+        $member = Member::with('user')->findOrFail($id);
+        
+        $member->name = $member->user->name ?? 'Unknown';
+        $member->email = $member->user->email ?? '-';
+        $member->image = $member->user->image ?? 'default.jpg';
+
+        $member->currentSubscription = \App\Models\MemberSubscription::activeByMember($member->id);
+        $member->attendance_rate = \App\Models\Attendance::getRate($member->id);
+        
+        $member->recentAttendance = \App\Models\Attendance::byMember($member->id)
+            ->latest()
+            ->take(5)
+            ->get();
+
+        return view('gym.members.details', compact('member'));
     }
 
     // ================= EDIT MEMBER =================

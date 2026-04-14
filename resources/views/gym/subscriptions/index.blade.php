@@ -4,36 +4,42 @@
 
 <!-- Page Heading -->
 
-<div class="d-sm-flex align-items-center justify-content-between mb-4">
-    <h1 class="h3 mb-0 text-gray-800">Member Subscriptions</h1>
-
-
-    <a href="{{ route('subscriptions.create') }}" class="d-none d-sm-inline-block btn btn-sm btn-success shadow-sm">
-        <i class="fas fa-plus fa-sm text-white-50"></i> Add New Subscription
-    </a>
-
-
+<div class="card-gym shadow mb-4" style="background-color: #0f1419; border-left: 4px solid #00d4ff;">
+    <div class="p-4" style="background: linear-gradient(135deg, rgba(0,212,255,0.1) 0%, rgba(255,0,110,0.1) 100%);">
+        <div class="row align-items-center">
+            <div class="col">
+                <h1 class="gym-accent font-weight-bold mb-2">
+                    <i class="fas fa-id-card mr-2"></i>
+                    Member Subscriptions
+                </h1>
+            </div>
+            <div class="col-auto">
+                <a href="{{ route('subscriptions.create') }}" class="btn btn-gym-primary">
+                    <i class="fas fa-plus mr-2"></i> Add New Subscription
+                </a>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- Statistics Cards -->
 
 <div class="row mb-4">
 
-
     <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-left-success shadow h-100 py-2">
+        <div class="card-gym shadow h-100 py-2" style="border-left: 4px solid #2dce89;">
             <div class="card-body">
                 <div class="row no-gutters align-items-center">
                     <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                        <div class="text-xs font-weight-bold text-uppercase mb-1" style="color: #2dce89;">
                             Active Subscriptions
                         </div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                        <div class="h5 mb-0 font-weight-bold text-light-custom">
                             {{ $stats['active_subscriptions'] ?? 0 }}
                         </div>
                     </div>
                     <div class="col-auto">
-                        <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                        <i class="fas fa-check-circle fa-2x" style="color: #2dce89; opacity: 0.7;"></i>
                     </div>
                 </div>
             </div>
@@ -41,19 +47,19 @@
     </div>
 
     <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-left-warning shadow h-100 py-2">
+        <div class="card-gym shadow h-100 py-2" style="border-left: 4px solid #ffc107;">
             <div class="card-body">
                 <div class="row no-gutters align-items-center">
                     <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                        <div class="text-xs font-weight-bold text-uppercase mb-1" style="color: #ffc107;">
                             Expiring Soon (7 days)
                         </div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                        <div class="h5 mb-0 font-weight-bold text-light-custom">
                             {{ $stats['expiring_soon'] ?? 0 }}
                         </div>
                     </div>
                     <div class="col-auto">
-                        <i class="fas fa-exclamation-triangle fa-2x text-gray-300"></i>
+                        <i class="fas fa-exclamation-triangle fa-2x" style="color: #ffc107; opacity: 0.7;"></i>
                     </div>
                 </div>
             </div>
@@ -61,19 +67,19 @@
     </div>
 
     <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-left-danger shadow h-100 py-2">
+        <div class="card-gym shadow h-100 py-2" style="border-left: 4px solid #f5365c;">
             <div class="card-body">
                 <div class="row no-gutters align-items-center">
                     <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                        <div class="text-xs font-weight-bold text-uppercase mb-1" style="color: #f5365c;">
                             Overdue
                         </div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                        <div class="h5 mb-0 font-weight-bold text-light-custom">
                             {{ $stats['overdue'] ?? 0 }}
                         </div>
                     </div>
                     <div class="col-auto">
-                        <i class="fas fa-times-circle fa-2x text-gray-300"></i>
+                        <i class="fas fa-times-circle fa-2x" style="color: #f5365c; opacity: 0.7;"></i>
                     </div>
                 </div>
             </div>
@@ -81,19 +87,19 @@
     </div>
 
     <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-left-primary shadow h-100 py-2">
+        <div class="card-gym shadow h-100 py-2" style="border-left: 4px solid #00d4ff;">
             <div class="card-body">
                 <div class="row no-gutters align-items-center">
                     <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                        <div class="text-xs font-weight-bold gym-accent text-uppercase mb-1">
                             Monthly Revenue
                         </div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                        <div class="h5 mb-0 font-weight-bold text-light-custom">
                             Rp {{ number_format($stats['monthly_revenue'] ?? 0,0,',','.') }}
                         </div>
                     </div>
                     <div class="col-auto">
-                        <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                        <i class="fas fa-dollar-sign fa-2x gym-accent" style="opacity: 0.7;"></i>
                     </div>
                 </div>
             </div>
@@ -105,19 +111,19 @@
 
 <!-- Filter -->
 
-<div class="card shadow mb-4">
-    <div class="card-header py-3">
-        <h6 class="m-0 font-weight-bold text-success">Filter Subscriptions</h6>
+<div class="card-gym shadow mb-4" style="background-color: #0f1419; border-left: 4px solid #00d4ff;">
+    <div class="card-header py-3" style="background: linear-gradient(135deg, rgba(0,212,255,0.2) 0%, rgba(255,0,110,0.2) 100%); border-bottom: 1px solid rgba(255,255,255,0.1);">
+        <h6 class="m-0 font-weight-bold gym-accent">Filter Subscriptions</h6>
     </div>
 
 
-    <div class="card-body">
+    <div class="card-body" style="background-color: rgba(0,0,0,0.2);">
         <form method="GET" action="{{ route('subscriptions.index') }}">
 
             <div class="row">
 
                 <div class="col-md-3">
-                    <select name="status" class="form-control">
+                    <select name="status" class="form-control dark-input">
                         <option value="">All Status</option>
                         <option value="active" {{ request('status')=='active'?'selected':'' }}>Active</option>
                         <option value="expiring" {{ request('status')=='expiring'?'selected':'' }}>Expiring</option>
@@ -126,7 +132,7 @@
                 </div>
 
                 <div class="col-md-3">
-                    <select name="plan" class="form-control">
+                    <select name="plan" class="form-control dark-input">
                         <option value="">All Plans</option>
                         @foreach($plans as $plan)
                         <option value="{{ $plan->id }}" {{ request('plan')==$plan->id?'selected':'' }}>
@@ -137,12 +143,12 @@
                 </div>
 
                 <div class="col-md-3">
-                    <input type="month" name="month" class="form-control" value="{{ request('month') }}">
+                    <input type="month" name="month" class="form-control dark-input" value="{{ request('month') }}">
                 </div>
 
                 <div class="col-md-3">
-                    <button class="btn btn-primary">Filter</button>
-                    <a href="{{ route('subscriptions.index') }}" class="btn btn-secondary">Reset</a>
+                    <button class="btn btn-gym-primary">Filter</button>
+                    <a href="{{ route('subscriptions.index') }}" class="btn btn-gym-secondary">Reset</a>
                 </div>
 
             </div>
@@ -154,18 +160,18 @@
 
 <!-- Table -->
 
-<div class="card shadow mb-4">
+<div class="card-gym shadow mb-4" style="background-color: #0f1419; border-left: 4px solid #00d4ff;">
 
 
-    <div class="card-header py-3">
-        <h6 class="m-0 font-weight-bold text-success">All Subscriptions</h6>
+    <div class="card-header py-3" style="background: linear-gradient(135deg, rgba(0,212,255,0.2) 0%, rgba(255,0,110,0.2) 100%); border-bottom: 1px solid rgba(255,255,255,0.1);">
+        <h6 class="m-0 font-weight-bold gym-accent">All Subscriptions</h6>
     </div>
 
-    <div class="card-body">
+    <div class="card-body" style="background-color: rgba(0,0,0,0.2);">
 
         <div class="table-responsive">
 
-            <table class="table table-bordered" id="dataTable">
+            <table class="table table-bordered table-gym" id="dataTable">
 
                 <thead>
                     <tr>
@@ -336,5 +342,50 @@ function viewSub(id) {
     });
 }
 </script>
+
+<style>
+.dark-input {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: #cbd5e1 !important;
+    transition: all 0.3s ease;
+}
+.dark-input::placeholder {
+    color: #64748b !important;
+}
+.dark-input:focus {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    border-color: #00d4ff !important;
+    color: #ffffff !important;
+    box-shadow: 0 0 0 0.2rem rgba(0, 212, 255, 0.25) !important;
+}
+.dark-input option {
+    background-color: #0f1419;
+    color: #cbd5e1;
+}
+
+.table-gym {
+    color: #cbd5e1; 
+}
+.table-gym td {
+    border-color: rgba(255, 255, 255, 0.05) !important;
+    vertical-align: middle;
+}
+.table-gym th {
+    border-color: rgba(255, 255, 255, 0.05) !important;
+    border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+    color: #94a3b8; 
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+}
+.dataTables_wrapper .dataTables_length, .dataTables_wrapper .dataTables_filter, .dataTables_wrapper .dataTables_info, .dataTables_wrapper .dataTables_processing, .dataTables_wrapper .dataTables_paginate {
+    color: #cbd5e1 !important;
+}
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+    color: #cbd5e1 !important;
+}
+</style>
 
 @endpush

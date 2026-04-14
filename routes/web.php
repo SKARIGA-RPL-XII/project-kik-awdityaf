@@ -157,6 +157,8 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
         Route::post('/members/update/{id}', [GymController::class, 'updateMember']);
 
+        Route::get('/get-member-details/{id}', [GymController::class, 'getMemberDetails']);
+        Route::get('/delete-member/{id}', [GymController::class, 'deleteMember']);
         Route::delete('/members/{id}', [GymController::class, 'deleteMember']);
 
         // Subscriptions routes

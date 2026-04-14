@@ -78,7 +78,7 @@
 
     <div class="col-lg-4 col-md-6 mb-4">
 
-        <div class="card-gym shadow h-100 plan-card"
+        <div class="card-gym shadow h-100 plan-card d-flex flex-column"
             style="border-left: 4px solid #{{ $color == 'primary' ? '00d4ff' : ($color == 'success' ? '2dce89' : ($color == 'warning' ? 'f5365c' : '11cdef')) }};">
 
             <div class="card-header"
@@ -92,7 +92,7 @@
                 </div>
             </div>
 
-            <div class="card-body text-center" style="background-color: rgba(0,0,0,0.2);">
+            <div class="card-body text-center flex-fill d-flex flex-column" style="background-color: rgba(0,0,0,0.2);">
 
                 <div class="price-section mb-4">
 
@@ -108,18 +108,18 @@
                 </div>
 
 
-                <p class="text-light mb-4">
+                <p class="text-light mb-4" style="min-height: 48px;">
                     {{ $plan['description'] }}
                 </p>
 
 
-                <div class="features-section mb-4">
+                <div class="features-section mb-4 flex-grow-1 d-flex flex-column">
 
                     <h6 class="gym-accent font-weight-bold mb-3">
                         What's Included:
                     </h6>
 
-                    <ul class="list-unstyled">
+                    <ul class="list-unstyled flex-grow-1">
 
                         @foreach($features as $feature)
 
@@ -139,7 +139,7 @@
                 </div>
 
 
-                <div class="duration-info mb-4">
+                <div class="duration-info mt-auto mb-2">
 
                     <div class="badge badge-pill"
                         style="background-color: rgba(255,255,255,0.1); border: 1px solid #{{ $color == 'primary' ? '00d4ff' : ($color == 'success' ? '2dce89' : ($color == 'warning' ? 'f5365c' : '11cdef')) }}; color: #{{ $color == 'primary' ? '00d4ff' : ($color == 'success' ? '2dce89' : ($color == 'warning' ? 'f5365c' : '11cdef')) }};">
@@ -229,35 +229,35 @@
 
     <div class="col-12">
 
-        <div class="card shadow">
+        <div class="card-gym shadow" style="background-color: #0f1419; border-left: 4px solid #00d4ff;">
 
-            <div class="card-header">
+            <div class="card-header" style="background: linear-gradient(135deg, rgba(0,212,255,0.2) 0%, rgba(255,0,110,0.2) 100%); border-bottom: 1px solid rgba(255,255,255,0.1);">
 
-                <h6 class="m-0 font-weight-bold text-primary">
+                <h5 class="m-0 font-weight-bold gym-accent">
 
                     <i class="fas fa-info-circle mr-2"></i>
                     Membership Information
 
-                </h6>
+                </h5>
 
             </div>
 
-            <div class="card-body">
+            <div class="card-body" style="background-color: rgba(0,0,0,0.2);">
 
                 <div class="row">
 
-                    <div class="col-md-6">
+                    <div class="col-md-6 mb-4 mb-md-0">
 
-                        <h6 class="font-weight-bold">
+                        <h6 class="font-weight-bold gym-accent mb-3">
                             Benefits of Membership:
                         </h6>
 
                         <ul class="list-unstyled">
 
-                            <li><i class="fas fa-check text-success mr-2"></i>Access to all gym equipment</li>
-                            <li><i class="fas fa-check text-success mr-2"></i>Professional guidance from trainers</li>
-                            <li><i class="fas fa-check text-success mr-2"></i>Clean and secure facilities</li>
-                            <li><i class="fas fa-check text-success mr-2"></i>Flexible workout hours</li>
+                            <li class="mb-2 text-light"><i class="fas fa-check mr-2" style="color: #00d4ff;"></i>Access to all gym equipment</li>
+                            <li class="mb-2 text-light"><i class="fas fa-check mr-2" style="color: #00d4ff;"></i>Professional guidance from trainers</li>
+                            <li class="mb-2 text-light"><i class="fas fa-check mr-2" style="color: #00d4ff;"></i>Clean and secure facilities</li>
+                            <li class="mb-2 text-light"><i class="fas fa-check mr-2" style="color: #00d4ff;"></i>Flexible workout hours</li>
 
                         </ul>
 
@@ -265,16 +265,16 @@
 
                     <div class="col-md-6">
 
-                        <h6 class="font-weight-bold">
+                        <h6 class="font-weight-bold gym-accent mb-3">
                             Payment Methods:
                         </h6>
 
                         <ul class="list-unstyled">
 
-                            <li><i class="fas fa-money-bill text-success mr-2"></i>Cash Payment</li>
-                            <li><i class="fas fa-university text-success mr-2"></i>Bank Transfer</li>
-                            <li><i class="fas fa-credit-card text-success mr-2"></i>Credit/Debit Card</li>
-                            <li><i class="fas fa-mobile-alt text-success mr-2"></i>E-Wallet (OVO, GoPay, DANA)</li>
+                            <li class="mb-2 text-light"><i class="fas fa-money-bill mr-2" style="color: #00d4ff;"></i>Cash Payment</li>
+                            <li class="mb-2 text-light"><i class="fas fa-university mr-2" style="color: #00d4ff;"></i>Bank Transfer</li>
+                            <li class="mb-2 text-light"><i class="fas fa-credit-card mr-2" style="color: #00d4ff;"></i>Credit/Debit Card</li>
+                            <li class="mb-2 text-light"><i class="fas fa-mobile-alt mr-2" style="color: #00d4ff;"></i>E-Wallet (OVO, GoPay, DANA)</li>
 
                         </ul>
 

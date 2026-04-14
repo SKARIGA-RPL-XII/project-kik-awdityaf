@@ -15,8 +15,8 @@ class AdminController extends Controller
      */
     public function index()
     {
-        $admins = MsUser::where('role', 'admin')->get();
-        return view('master.admin.index', compact('admins'));
+        $users = MsUser::where('role', 'admin')->get();
+        return view('master.admin.index', compact('users'));
     }
 
     /**

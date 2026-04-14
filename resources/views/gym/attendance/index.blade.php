@@ -5,23 +5,29 @@
 @section('content')
 
 <!-- Page Heading -->
-<div class="d-sm-flex align-items-center justify-content-between mb-4">
-    <h1 class="h3 mb-0 text-gray-800">
-        <i class="fas fa-user-check text-success mr-2"></i> Gym Attendance
-    </h1>
+<!-- Page Heading -->
+<div class="card-gym shadow mb-4" style="background-color: #0f1419; border-left: 4px solid #00d4ff;">
+    <div class="p-4" style="background: linear-gradient(135deg, rgba(0,212,255,0.1) 0%, rgba(255,0,110,0.1) 100%);">
+        <div class="row align-items-center">
+            <div class="col">
+                <h1 class="gym-accent font-weight-bold mb-2">
+                    <i class="fas fa-user-check text-success mr-2"></i> Gym Attendance
+                </h1>
+            </div>
+            <div class="col-auto">
+                <a href="{{ url('gym/manual-checkin') }}" class="btn btn-gym-primary shadow-sm mr-2">
+                    <i class="fas fa-user-plus mr-2"></i> Manual Check-in
+                </a>
 
-    <div>
-        <a href="{{ url('gym/manual-checkin') }}" class="btn btn-sm btn-success shadow-sm mr-2">
-            <i class="fas fa-user-plus fa-sm text-white-50"></i> Manual Check-in
-        </a>
+                <button class="btn btn-gym-secondary shadow-sm mr-2" onclick="refreshAttendance()">
+                    <i class="fas fa-sync mr-2"></i> Refresh
+                </button>
 
-        <button class="btn btn-sm btn-info shadow-sm mr-2" onclick="refreshAttendance()">
-            <i class="fas fa-sync fa-sm text-white-50"></i> Refresh
-        </button>
-
-        <a href="{{ url('gym/attendance-history') }}" class="btn btn-sm btn-secondary shadow-sm">
-            <i class="fas fa-history fa-sm text-white-50"></i> View History
-        </a>
+                <a href="{{ url('gym/attendance-history') }}" class="btn btn-gym-secondary shadow-sm">
+                    <i class="fas fa-history mr-2"></i> View History
+                </a>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -31,23 +37,20 @@
 
     <!-- Today -->
     <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-left-success shadow h-100 py-2">
+        <div class="card-gym shadow h-100 py-2" style="border-left: 4px solid #2dce89;">
             <div class="card-body">
                 <div class="row no-gutters align-items-center">
-
                     <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                        <div class="text-xs font-weight-bold text-uppercase mb-1" style="color: #4ade80; letter-spacing: 0.5px;">
                             Today's Attendance
                         </div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                        <div class="h4 mb-0 font-weight-bold" style="color: #ffffff;">
                             {{ $attendance_stats['today'] ?? 0 }}
                         </div>
                     </div>
-
                     <div class="col-auto">
-                        <i class="fas fa-calendar-day fa-2x text-gray-300"></i>
+                        <i class="fas fa-calendar-day fa-2x" style="color: #2dce89; opacity: 0.7;"></i>
                     </div>
-
                 </div>
             </div>
         </div>
@@ -56,26 +59,21 @@
 
     <!-- In Gym -->
     <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-left-info shadow h-100 py-2">
+        <div class="card-gym shadow h-100 py-2" style="border-left: 4px solid #00d4ff;">
             <div class="card-body">
-
                 <div class="row no-gutters align-items-center">
-
                     <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                        <div class="text-xs font-weight-bold gym-accent text-uppercase mb-1" style="letter-spacing: 0.5px;">
                             Currently In Gym
                         </div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                        <div class="h4 mb-0 font-weight-bold" style="color: #ffffff;">
                             {{ $attendance_stats['currently_in_gym'] ?? 0 }}
                         </div>
                     </div>
-
                     <div class="col-auto">
-                        <i class="fas fa-users fa-2x text-gray-300"></i>
+                        <i class="fas fa-users fa-2x gym-accent" style="opacity: 0.7;"></i>
                     </div>
-
                 </div>
-
             </div>
         </div>
     </div>
@@ -83,26 +81,21 @@
 
     <!-- This Month -->
     <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-left-warning shadow h-100 py-2">
+        <div class="card-gym shadow h-100 py-2" style="border-left: 4px solid #ffc107;">
             <div class="card-body">
-
                 <div class="row no-gutters align-items-center">
-
                     <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                        <div class="text-xs font-weight-bold text-uppercase mb-1" style="color: #fbbf24; letter-spacing: 0.5px;">
                             This Month
                         </div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                        <div class="h4 mb-0 font-weight-bold" style="color: #ffffff;">
                             {{ $attendance_stats['this_month'] ?? 0 }}
                         </div>
                     </div>
-
                     <div class="col-auto">
-                        <i class="fas fa-calendar-alt fa-2x text-gray-300"></i>
+                        <i class="fas fa-calendar-alt fa-2x" style="color: #ffc107; opacity: 0.7;"></i>
                     </div>
-
                 </div>
-
             </div>
         </div>
     </div>
@@ -110,26 +103,21 @@
 
     <!-- Avg -->
     <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-left-primary shadow h-100 py-2">
+        <div class="card-gym shadow h-100 py-2" style="border-left: 4px solid #aab2bd;">
             <div class="card-body">
-
                 <div class="row no-gutters align-items-center">
-
                     <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                        <div class="text-xs font-weight-bold text-uppercase mb-1" style="color: #cbd5e1; letter-spacing: 0.5px;">
                             Daily Average
                         </div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                        <div class="h4 mb-0 font-weight-bold" style="color: #ffffff;">
                             {{ $attendance_stats['avg_daily'] ?? 0 }}
                         </div>
                     </div>
-
                     <div class="col-auto">
-                        <i class="fas fa-chart-line fa-2x text-gray-300"></i>
+                        <i class="fas fa-chart-line fa-2x" style="color: #aab2bd; opacity: 0.7;"></i>
                     </div>
-
                 </div>
-
             </div>
         </div>
     </div>
@@ -138,20 +126,20 @@
 
 
 <!-- Attendance Table -->
-<div class="card shadow mb-4">
+<div class="card-gym shadow mb-4" style="background-color: #0f1419; border-left: 4px solid #00d4ff;">
 
-    <div class="card-header py-3">
-        <h6 class="m-0 font-weight-bold text-success">
+    <div class="card-header py-3" style="background: linear-gradient(135deg, rgba(0,212,255,0.2) 0%, rgba(255,0,110,0.2) 100%); border-bottom: 1px solid rgba(255,255,255,0.1);">
+        <h6 class="m-0 font-weight-bold" style="color: #ffffff; letter-spacing: 1px;">
             Today's Attendance - {{ now()->format('F d, Y') }}
         </h6>
     </div>
 
 
-    <div class="card-body">
+    <div class="card-body" style="background-color: rgba(0,0,0,0.2);">
 
         <div class="table-responsive">
 
-            <table class="table table-bordered" id="todayTable">
+            <table class="table table-bordered table-gym" id="todayTable">
 
                 <thead>
                     <tr>
@@ -172,8 +160,8 @@
                     <tr>
 
                         <td>
-                            <strong>{{ $record->member->user->name ?? 'Unknown' }}</strong><br>
-                            <small class="text-muted">{{ $record->member->member_code ?? 'N/A' }}</small>
+                            <strong style="color: #f1f5f9;">{{ $record->member->user->name ?? 'Unknown' }}</strong><br>
+                            <small style="color: #94a3b8;">{{ $record->member->member_code ?? 'N/A' }}</small>
                         </td>
 
 
@@ -197,7 +185,7 @@
                         </td>
 
 
-                        <td>
+                        <td style="color: #e2e8f0; font-weight: 500;">
                             @if ($record->check_out_time)
 
                             {{ \Carbon\Carbon::parse($record->check_in_time)
@@ -206,7 +194,7 @@
 
                             @else
 
-                            <span class="text-info">
+                            <span class="gym-accent">
                                 {{ \Carbon\Carbon::parse($record->check_in_time)
                                             ->diff(now())
                                             ->format('%H:%I') }}
@@ -346,5 +334,56 @@ function deleteAttendance(id) {
 
 }
 </script>
+
+<style>
+.table-gym {
+    color: #cbd5e1; 
+}
+.table-gym td {
+    border-color: rgba(255, 255, 255, 0.05) !important;
+    vertical-align: middle;
+}
+.table-gym thead th, 
+.table-gym th,
+.table-gym thead tr th {
+    background-color: #1e293b !important;
+    color: #ffffff !important; 
+    font-weight: 800 !important;
+    text-transform: uppercase !important;
+    font-size: 0.85rem !important;
+    letter-spacing: 1px !important;
+    padding: 15px 12px !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Card Headers Highlight */
+.card-gym .card-header h6,
+.card-gym h1,
+.gym-accent {
+    color: #ffffff !important; /* Make headers pop with pure white */
+    text-shadow: 0 0 10px rgba(0, 212, 255, 0.2);
+}
+
+.table-gym td {
+    border-color: rgba(255, 255, 255, 0.05) !important;
+    vertical-align: middle;
+    color: #cbd5e1;
+}
+
+.dataTables_wrapper .dataTables_length, 
+.dataTables_wrapper .dataTables_filter, 
+.dataTables_wrapper .dataTables_info, 
+.dataTables_wrapper .dataTables_paginate {
+    color: #ffffff !important; /* White for all helper text */
+    font-weight: 500;
+}
+
+.dataTables_wrapper .dataTables_filter input {
+    background-color: rgba(255,255,255,0.1) !important;
+    border: 1px solid var(--gym-cyan) !important;
+    color: #ffffff !important;
+    outline: none;
+}
+</style>
 
 @endsection

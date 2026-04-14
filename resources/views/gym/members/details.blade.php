@@ -1,9 +1,3 @@
-@extends('layouts.admin')
-
-@section('title', 'Member Detail')
-
-@section('content')
-
 <div class="row">
 
     {{-- Profile --}}
@@ -342,5 +336,3 @@
     </div>
 
 </div>
-
-@endsection

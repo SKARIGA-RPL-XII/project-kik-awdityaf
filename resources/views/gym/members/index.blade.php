@@ -5,26 +5,36 @@
 @section('content')
 
 <!-- Page Heading -->
-<div class="d-sm-flex align-items-center justify-content-between mb-4">
-    <h1 class="h3 mb-0 text-gray-800">Member Management</h1>
-
-    <a href="{{ route('gym.add_member') }}" class="d-none d-sm-inline-block btn btn-sm btn-success shadow-sm">
-        <i class="fas fa-user-plus fa-sm text-white-50"></i> Add New Member
-    </a>
+<div class="card-gym shadow mb-4" style="background-color: #0f1419; border-left: 4px solid #00d4ff;">
+    <div class="p-4" style="background: linear-gradient(135deg, rgba(0,212,255,0.1) 0%, rgba(255,0,110,0.1) 100%);">
+        <div class="row align-items-center">
+            <div class="col">
+                <h1 class="gym-accent font-weight-bold mb-2">
+                    <i class="fas fa-users mr-2"></i>
+                    Member Management
+                </h1>
+            </div>
+            <div class="col-auto">
+                <a href="{{ route('gym.add_member') }}" class="btn btn-gym-primary">
+                    <i class="fas fa-user-plus mr-2"></i> Add New Member
+                </a>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- Members Table -->
-<div class="card shadow mb-4">
+<div class="card-gym shadow mb-4" style="background-color: #0f1419; border-left: 4px solid #00d4ff;">
 
-    <div class="card-header py-3">
-        <h6 class="m-0 font-weight-bold text-success">All Members</h6>
+    <div class="card-header py-3" style="background: linear-gradient(135deg, rgba(0,212,255,0.2) 0%, rgba(255,0,110,0.2) 100%); border-bottom: 1px solid rgba(255,255,255,0.1);">
+        <h6 class="m-0 font-weight-bold gym-accent">All Members</h6>
     </div>
 
-    <div class="card-body">
+    <div class="card-body" style="background-color: rgba(0,0,0,0.2);">
 
         <div class="table-responsive">
 
-            <table class="table table-bordered" id="dataTable" width="100%">
+            <table class="table table-bordered table-gym" id="dataTable" width="100%">
                 <thead>
                     <tr>
                         <th>Member Code</th>
@@ -299,5 +309,30 @@ function deleteMember(id, name) {
 @push('styles')
 
 <link href="{{ asset('assets/vendor/datatables/dataTables.bootstrap4.min.css') }}" rel="stylesheet">
+
+<style>
+.table-gym {
+    color: #cbd5e1; 
+}
+.table-gym td {
+    border-color: rgba(255, 255, 255, 0.05) !important;
+    vertical-align: middle;
+}
+.table-gym th {
+    border-color: rgba(255, 255, 255, 0.05) !important;
+    border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+    color: #94a3b8; 
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+}
+.dataTables_wrapper .dataTables_length, .dataTables_wrapper .dataTables_filter, .dataTables_wrapper .dataTables_info, .dataTables_wrapper .dataTables_processing, .dataTables_wrapper .dataTables_paginate {
+    color: #cbd5e1 !important;
+}
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+    color: #cbd5e1 !important;
+}
+</style>
 
 @endpush

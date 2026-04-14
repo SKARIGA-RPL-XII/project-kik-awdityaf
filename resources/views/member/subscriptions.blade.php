@@ -45,7 +45,7 @@
 
                 <div class="table-responsive">
 
-                    <table class="table table-bordered" width="100%" cellspacing="0">
+                    <table class="table table-bordered table-gym" width="100%" cellspacing="0">
 
                         <thead>
                             <tr>
@@ -81,7 +81,7 @@
                                 </td>
 
                                 <td>
-                                    <span class="text-light font-weight-bold">
+                                    <span class="font-weight-bold" style="color: #f1f5f9;">
                                         Rp {{ number_format($subscription['amount_paid'],0,',','.') }}
                                     </span>
                                 </td>
@@ -101,7 +101,7 @@
 
                                     @else
 
-                                    <span class="text-muted">-</span>
+                                    <span style="color: #64748b;">-</span>
 
                                     @endif
 
@@ -123,7 +123,7 @@
 
                     <i class="fas fa-credit-card fa-3x text-gray-300 mb-3"></i>
 
-                    <p class="text-muted">
+                    <p style="color: #94a3b8;">
                         You don't have any subscription history yet.
                     </p>
 
@@ -142,4 +142,23 @@
 
     </div>
 </div>
+
+<style>
+.table-gym {
+    color: #cbd5e1; /* Soft slate white */
+}
+.table-gym td {
+    border-color: rgba(255, 255, 255, 0.05) !important;
+    vertical-align: middle;
+}
+.table-gym th {
+    border-color: rgba(255, 255, 255, 0.05) !important;
+    border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+    color: #94a3b8; /* Muted slate for headers */
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+}
+</style>
 @endsection

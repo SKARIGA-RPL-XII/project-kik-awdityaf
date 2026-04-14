@@ -109,7 +109,9 @@
                 <h3 class="gym-accent font-weight-bold mb-4">
                     <i class="fas fa-chart-line mr-2"></i>Member Growth Overview
                 </h3>
-                <canvas id="memberGrowthChart" style="height: 300px;"></canvas>
+                <div class="chart-container" style="position: relative; height: 300px; width: 100%;">
+                    <canvas id="memberGrowthChart"></canvas>
+                </div>
             </div>
         </div>
     </div>
@@ -121,7 +123,9 @@
                 <h3 class="gym-accent-secondary font-weight-bold mb-4">
                     <i class="fas fa-chart-pie mr-2"></i>Member Distribution
                 </h3>
-                <canvas id="memberDistributionChart" style="height: 300px;"></canvas>
+                <div class="chart-container" style="position: relative; height: 300px; width: 100%;">
+                    <canvas id="memberDistributionChart"></canvas>
+                </div>
             </div>
         </div>
     </div>
@@ -217,7 +221,7 @@
 </div>
 
 @push('scripts')
-<!-- <script>
+<script>
 document.addEventListener('DOMContentLoaded', function() {
     // Sample Data
     const monthlyGrowth = [12, 19, 13, 25, 22, 30, 28, 35, 40, 45, 50, 60];
@@ -342,6 +346,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
-</script> -->
+</script>
 @endpush
 @endsection

@@ -8,26 +8,20 @@ use Illuminate\Support\Facades\Log;
 
 use App\Models\MembershipPlan;
 use App\Models\MemberSubscription;
-use App\Models\GymMember;
+use App\Models\Member;
+use App\Models\Transaction;
+use App\Services\MidtransService;
 
 class PaymentController extends Controller
 {
-    private string $serverKey;
-    private string $clientKey;
-    private bool $isProduction;
-    private string $midtransUrl;
+    private MidtransService $midtransService;
 
-    public function __construct()
+    public function __construct(MidtransService $midtransService)
     {
-        $this->middleware('auth');
+        // Notification doesn't need auth, so we specify middleware only for member actions
+        $this->middleware('auth')->except(['notification']);
 
-        $this->serverKey = config('services.midtrans.server_key') ?? '';
-        $this->clientKey = config('services.midtrans.client_key') ?? '';
-        $this->isProduction = (bool) config('services.midtrans.is_production', false);
-
-        $this->midtransUrl = $this->isProduction
-            ? 'https://app.midtrans.com/snap/v1/transactions'
-            : 'https://app.sandbox.midtrans.com/snap/v1/transactions';
+        $this->midtransService = $midtransService;
     }
 
     // ===============================
@@ -41,7 +35,7 @@ class PaymentController extends Controller
         ]);
 
         $plan = MembershipPlan::find($request->plan_id);
-        $member = GymMember::with('user')->find($request->member_id);
+        $member = Member::with('user')->find($request->member_id);
 
         if (!$plan || !$member) {
             return response()->json([
@@ -50,51 +44,31 @@ class PaymentController extends Controller
             ], 404);
         }
 
-        $orderId = 'GYM-' . $member->member_code . '-' . time();
+        // Generate robust unique order id
+        $orderId = 'GYM-' . $member->member_code . '-' . time() . '-' . \Illuminate\Support\Str::random(4);
 
-        // Create subscription
-        $subscription = MemberSubscription::create([
-            'member_id' => $member->id,
-            'membership_plan_id' => $plan->id,
-            'start_date' => now()->toDateString(),
-            'end_date' => now()->addMonths($plan->duration_months),
-            'amount_paid' => $plan->price,
-            'payment_status' => 'Pending',
-            'payment_method' => 'midtrans',
+        // Create transaction record
+        $transaction = Transaction::create([
             'order_id' => $orderId,
-            'created_at' => now()
+            'member_id' => $member->id,
+            'plan_id' => $plan->id,
+            'amount' => $plan->price,
+            'status' => 'pending',
+            'payment_method' => 'midtrans',
         ]);
 
-        $payload = [
-            'transaction_details' => [
-                'order_id' => $orderId,
-                'gross_amount' => (int)$plan->price
-            ],
-
-            'customer_details' => [
-                'first_name' => $member->user->name ?? 'Member',
-                'email' => $member->user->email ?? 'member@gym.com',
-                'phone' => $member->phone ?? '08123456789'
-            ],
-
-            'item_details' => [[
-                'id' => 'membership_' . $plan->id,
-                'price' => (int)$plan->price,
-                'quantity' => 1,
-                'name' => $plan->plan_name
-            ]]
-        ];
-
-        $snapToken = $this->createSnapToken($payload);
+        // Interact with Midtrans Service
+        $snapToken = $this->midtransService->createSnapToken($transaction);
 
         if (!$snapToken) {
+            $transaction->delete(); // Rollback
             return response()->json([
                 'status' => 'error',
-                'message' => 'Failed create payment token'
+                'message' => 'Gagal membuat token pembayaran. Pastikan API key Midtrans valid.'
             ], 500);
         }
 
-        $subscription->update([
+        $transaction->update([
             'snap_token' => $snapToken
         ]);
 
@@ -102,36 +76,52 @@ class PaymentController extends Controller
             'status' => 'success',
             'snap_token' => $snapToken,
             'order_id' => $orderId,
-            'subscription_id' => $subscription->id
         ]);
     }
 
-    // ===============================
-    // CREATE SNAP TOKEN
-    // ===============================
-    private function createSnapToken(array $data)
+    private function processPaymentStatus(array $payload)
     {
-        try {
+        $transaction = Transaction::where('order_id', $payload['order_id'])->first();
 
-            $response = Http::withBasicAuth($this->serverKey, '')
-                ->withHeaders([
-                    'Accept' => 'application/json'
-                ])
-                ->post($this->midtransUrl, $data);
-
-            Log::info('Midtrans Response', $response->json());
-
-            if ($response->status() == 201) {
-                return $response->json('token');
-            }
-
-            return null;
-        } catch (\Exception $e) {
-
-            Log::error('Midtrans Error: ' . $e->getMessage());
-
-            return null;
+        if (!$transaction) {
+            return false;
         }
+
+        if ($transaction->status !== 'success' && $payload['status'] === 'success') {
+            $transaction->update([
+                'status' => $payload['status'],
+                'payment_method' => $payload['payment_type'] ?? 'midtrans',
+            ]);
+
+            // Activate subscription
+            $existingSub = MemberSubscription::where('order_id', $transaction->order_id)->first();
+
+            if (!$existingSub) {
+                $plan = $transaction->plan;
+
+                MemberSubscription::create([
+                    'member_id' => $transaction->member_id,
+                    'membership_plan_id' => $transaction->plan_id,
+                    'start_date' => now()->toDateString(),
+                    'end_date' => now()->addMonths($plan->duration_months),
+                    'amount_paid' => $transaction->amount,
+                    'payment_status' => 'Paid',
+                    'payment_method' => $transaction->payment_method,
+                    'order_id' => $transaction->order_id,
+                    'snap_token' => $transaction->snap_token,
+                    'transaction_status' => 'settlement',
+                    'payment_date' => now(),
+                    'created_at' => now()
+                ]);
+            }
+        } elseif ($transaction->status !== $payload['status']) {
+            $transaction->update([
+                'status' => $payload['status'],
+                'payment_method' => $payload['payment_type'] ?? 'midtrans',
+            ]);
+        }
+
+        return $transaction;
     }
 
     // ===============================
@@ -139,46 +129,15 @@ class PaymentController extends Controller
     // ===============================
     public function notification(Request $request)
     {
-        $data = $request->all();
+        $payload = $this->midtransService->handleNotification();
 
-        $signature = hash(
-            'sha512',
-            $data['order_id'] .
-                $data['status_code'] .
-                $data['gross_amount'] .
-                $this->serverKey
-        );
-
-        if ($signature !== $data['signature_key']) {
-            return response('Invalid signature', 400);
+        if (!$payload) {
+            return response('Error processing notification', 500);
         }
 
-        $subscription = MemberSubscription::where('order_id', $data['order_id'])->first();
+        $this->processPaymentStatus($payload);
 
-        if (!$subscription) {
-            return response('Not found', 404);
-        }
-
-        $status = match ($data['transaction_status']) {
-
-            'capture' => $data['fraud_status'] === 'accept' ? 'Paid' : 'Challenge',
-
-            'settlement' => 'Paid',
-
-            'pending' => 'Pending',
-
-            'deny', 'cancel', 'expire' => 'Failed',
-
-            default => 'Unknown'
-        };
-
-        $subscription->update([
-            'payment_status' => $status,
-            'transaction_status' => $data['transaction_status'],
-            'payment_date' => $status === 'Paid' ? now() : null
-        ]);
-
-        return response('OK');
+        return response('OK', 200);
     }
 
     // ===============================
@@ -186,24 +145,24 @@ class PaymentController extends Controller
     // ===============================
     public function finish(Request $request)
     {
-        $subscription = MemberSubscription::where('order_id', $request->order_id)->first();
+        $orderId = $request->order_id;
+        
+        $transaction = Transaction::with('plan')->where('order_id', $orderId)->first();
+
+        // Local environment fallback: if transaction is still pending, proactively check Midtrans API
+        if ($transaction && $transaction->status === 'pending') {
+            $payload = $this->midtransService->checkStatus($orderId);
+            if ($payload) {
+                $transaction = $this->processPaymentStatus($payload);
+            }
+        }
 
         return view('payment.finish', [
             'title' => 'Payment Result',
-            'subscription' => $subscription,
+            'transaction' => $transaction,
             'order_id' => $request->order_id,
             'status_code' => $request->status_code,
             'transaction_status' => $request->transaction_status
-        ]);
-    }
-
-    // ===============================
-    // CLIENT KEY
-    // ===============================
-    public function getClientKey()
-    {
-        return response()->json([
-            'client_key' => $this->clientKey
         ]);
     }
 
@@ -212,18 +171,9 @@ class PaymentController extends Controller
     // ===============================
     public function test()
     {
-        $payload = [
-            'transaction_details' => [
-                'order_id' => 'TEST-' . time(),
-                'gross_amount' => 10000
-            ]
-        ];
-
-        $token = $this->createSnapToken($payload);
-
         return response()->json([
-            'status' => $token ? 'success' : 'failed',
-            'token' => $token
+            'status' => 'success',
+            'message' => 'Integrasi midtrans via Service siap digunakan.'
         ]);
     }
 }

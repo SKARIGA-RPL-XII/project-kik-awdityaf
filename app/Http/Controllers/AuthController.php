@@ -78,12 +78,24 @@ class AuthController extends Controller
             'password'  => 'required|min:6|confirmed'
         ]);
 
-        User::create([
+        $user = User::create([
             'name'     => $request->name,
             'email'    => $request->email,
             'password' => Hash::make($request->password),
             'role'     => 'user',
             'is_active' => true,
+        ]);
+
+        \App\Models\Member::create([
+            'user_id' => $user->id,
+            'member_code' => 'MEM-' . time() . '-' . rand(100, 999),
+            'join_date' => now(),
+            'status' => 'Active',
+            'phone' => '-',
+            'birth_date' => '2000-01-01',
+            'gender' => 'Male',
+            'emergency_contact' => '-',
+            'emergency_phone' => '-'
         ]);
 
         return redirect('/login')

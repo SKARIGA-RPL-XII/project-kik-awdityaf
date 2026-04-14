@@ -82,10 +82,13 @@
                         You are currently checked in
                     </div>
 
-                    <a href="{{ url('member/check-out') }}" class="btn btn-gym-secondary w-100">
-                        <i class="fas fa-sign-out-alt mr-2"></i>
-                        Check Out
-                    </a>
+                    <form action="{{ url('member/check-out') }}" method="POST">
+                        @csrf
+                        <button type="submit" class="btn btn-gym-secondary w-100">
+                            <i class="fas fa-sign-out-alt mr-2"></i>
+                            Check Out
+                        </button>
+                    </form>
 
                     @else
 
@@ -95,10 +98,13 @@
                         You are not checked in
                     </div>
 
-                    <a href="{{ url('member/check-in') }}" class="btn btn-gym-primary w-100">
-                        <i class="fas fa-sign-in-alt mr-2"></i>
-                        Check In
-                    </a>
+                    <form action="{{ url('member/check-in') }}" method="POST">
+                        @csrf
+                        <button type="submit" class="btn btn-gym-primary w-100">
+                            <i class="fas fa-sign-in-alt mr-2"></i>
+                            Check In
+                        </button>
+                    </form>
 
                     @endif
 

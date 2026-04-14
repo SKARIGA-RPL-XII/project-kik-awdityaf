@@ -27,7 +27,7 @@
 
 
 <!-- Current Subscription Alert -->
-@if(!empty($current_subscription))
+@if(!empty($currentSubscription))
 
 <div class="row">
     <div class="col-12 mb-4">
@@ -38,10 +38,10 @@
 
             <strong>Active Membership:</strong>
             You currently have an active
-            <strong>{{ $current_subscription['plan_name'] }}</strong>
+            <strong>{{ $currentSubscription->plan->plan_name ?? 'Plan' }}</strong>
             membership valid until
             <strong>
-                {{ \Carbon\Carbon::parse($current_subscription['end_date'])->format('M d, Y') }}
+                {{ \Carbon\Carbon::parse($currentSubscription->end_date)->format('M d, Y') }}
             </strong>
 
             <button type="button" class="close" data-dismiss="alert">
@@ -159,12 +159,12 @@
 
             <div class="card-footer bg-transparent text-center" style="border-top: 1px solid rgba(255,255,255,0.1);">
 
-                @if(!empty($current_subscription))
+                @if(!empty($currentSubscription))
 
-                <button class="btn btn-gym-secondary btn-block" disabled style="opacity: 0.6;">
+                <a href="#" onclick="alert('Anda sudah berlangganan, tunggu hingga langganan habis jika ingin upgrade'); return false;" class="btn btn-gym-secondary btn-block">
                     <i class="fas fa-lock mr-2"></i>
-                    Already Subscribed
-                </button>
+                    Subscribe Now
+                </a>
 
                 @else
 
@@ -173,7 +173,6 @@
 
                     <i class="fas fa-credit-card mr-2"></i>
                     Subscribe Now
-
                 </a>
 
                 @endif

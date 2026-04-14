@@ -115,8 +115,8 @@
             </div>
 
             <!-- Attendance -->
-            <li class="nav-item {{ request()->segment(2) == 'my_attendance' ? 'active' : '' }}">
-                <a class="nav-link" href="{{ url('member/my_attendance') }}">
+            <li class="nav-item {{ request()->segment(2) == 'attendance' ? 'active' : '' }}">
+                <a class="nav-link" href="{{ url('member/attendance') }}">
                     <i class="fas fa-fw fa-calendar-check"></i>
                     <span>My Attendance</span>
                 </a>

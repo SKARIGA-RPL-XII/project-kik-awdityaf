@@ -393,7 +393,19 @@ class MemberController extends Controller
 
         $user = Auth::user();
 
-        $member = Member::where('user_id', $user->id)->firstOrFail();
+        $member = Member::firstOrCreate(
+            ['user_id' => $user->id],
+            [
+                'member_code' => 'MEM-' . time() . '-' . rand(100, 999),
+                'join_date' => now(),
+                'status' => 'Active',
+                'phone' => '-',
+                'birth_date' => '2000-01-01',
+                'gender' => 'Male',
+                'emergency_contact' => '-',
+                'emergency_phone' => '-'
+            ]
+        );
 
         if (MemberSubscription::activeByMember($member->id)) {
 
@@ -427,7 +439,19 @@ class MemberController extends Controller
 
         $user = Auth::user();
 
-        $member = Member::where('user_id', $user->id)->firstOrFail();
+        $member = Member::firstOrCreate(
+            ['user_id' => $user->id],
+            [
+                'member_code' => 'MEM-' . time() . '-' . rand(100, 999),
+                'join_date' => now(),
+                'status' => 'Active',
+                'phone' => '-',
+                'birth_date' => '2000-01-01',
+                'gender' => 'Male',
+                'emergency_contact' => '-',
+                'emergency_phone' => '-'
+            ]
+        );
 
         if (MemberSubscription::activeByMember($member->id)) {
 

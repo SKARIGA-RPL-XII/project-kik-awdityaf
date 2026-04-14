@@ -17,7 +17,8 @@ class Member extends Model
         'emergency_phone',
         'join_date',
         'status',
-        'gender'
+        'gender',
+        'birth_date'
     ];
 
     public function user()

@@ -218,63 +218,34 @@
 
 
 <!-- Midtrans -->
-<script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key=""></script>
-
+<script src="{{ config('midtrans.is_production') ? 'https://app.midtrans.com/snap/snap.js' : 'https://app.sandbox.midtrans.com/snap/snap.js' }}" data-client-key="{{ config('midtrans.client_key') }}"></script>
 
 <script>
-let midtransClientKey = '';
-
-fetch("{{ url('payment/client-key') }}")
-    .then(res => res.json())
-    .then(data => {
-
-        midtransClientKey = data.client_key;
-
-        document
-            .querySelector('[data-client-key]')
-            .setAttribute('data-client-key', midtransClientKey);
-
-    });
-
-
-
 function togglePaymentOptions() {
-
     const paymentMethod = document.getElementById('payment_method').value;
-
     const midtransInfo = document.getElementById('midtrans_info');
     const payButton = document.getElementById('pay_button');
     const cashButton = document.getElementById('cash_button');
     const buttonText = document.getElementById('button_text');
 
     if (paymentMethod === 'midtrans') {
-
         midtransInfo.style.display = 'block';
         payButton.style.display = 'block';
         cashButton.style.display = 'none';
-
         buttonText.textContent = 'Pay Now';
-
     } else if (paymentMethod === 'cash') {
-
         midtransInfo.style.display = 'none';
         payButton.style.display = 'none';
         cashButton.style.display = 'block';
-
     } else {
-
         midtransInfo.style.display = 'none';
         payButton.style.display = 'block';
         cashButton.style.display = 'none';
-
         buttonText.textContent = 'Complete Subscription';
     }
 }
 
-
-
 function processPayment() {
-
     const paymentMethod = document.getElementById('payment_method').value;
 
     if (!paymentMethod) {
@@ -287,64 +258,62 @@ function processPayment() {
         return;
     }
 
-
     if (paymentMethod === 'midtrans') {
+        const payButton = document.getElementById('pay_button');
+        payButton.disabled = true;
+        document.getElementById('button_text').textContent = 'Processing...';
 
         fetch("{{ url('payment/create') }}", {
-
-                method: 'POST',
-
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-
-                body: new URLSearchParams({
-
-                    plan_id: '{{ $plan["id"] }}',
-                    member_id: '{{ $member["id"] }}'
-
-                })
-
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: new URLSearchParams({
+                plan_id: '{{ $plan["id"] }}',
+                member_id: '{{ $member["id"] }}'
             })
-
-            .then(res => res.json())
-
-            .then(data => {
-
-                if (data.status === 'success') {
-
-                    snap.pay(data.snap_token, {
-
-                        onSuccess: function() {
-
-                            window.location.href =
-                                "{{ url('payment/finish') }}?order_id=" + data.order_id;
-
-                        }
-
-                    });
-
-                } else {
-
-                    alert(data.message);
-
-                }
-
-            });
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'success') {
+                snap.pay(data.snap_token, {
+                    onSuccess: function(result) {
+                        window.location.href = "{{ url('payment/finish') }}?order_id=" + data.order_id;
+                    },
+                    onPending: function(result) {
+                        alert("Pembayaran ter-pending. Selesaikan pembayaran Anda.");
+                        window.location.href = "{{ url('payment/finish') }}?order_id=" + data.order_id;
+                    },
+                    onError: function(result) {
+                        alert("Pembayaran gagal!");
+                        payButton.disabled = false;
+                        document.getElementById('button_text').textContent = 'Pay Now';
+                    },
+                    onClose: function () {
+                        alert('Anda menutup layar pembayaran belum selesai!');
+                        payButton.disabled = false;
+                        document.getElementById('button_text').textContent = 'Pay Now';
+                    }
+                });
+            } else {
+                alert(data.message || 'Payment server error');
+                payButton.disabled = false;
+                document.getElementById('button_text').textContent = 'Pay Now';
+            }
+        })
+        .catch(err => {
+            alert('Gangguan koneksi ke server.');
+            payButton.disabled = false;
+            document.getElementById('button_text').textContent = 'Pay Now';
+        });
 
     } else {
-
         document.getElementById('subscriptionForm').submit();
-
     }
 }
 
-
-
 document.addEventListener('DOMContentLoaded', function() {
-
     togglePaymentOptions();
-
 });
 </script>

@@ -213,7 +213,7 @@
                             {{ $sub->end_date->format('M d, Y') }}
                             <br>
                             <small>
-                                {{ abs($days) }} days {{ $days<0?'overdue':'left' }}
+                                {{ floor(abs($days)) }} days {{ $days<0?'overdue':'left' }}
                             </small>
                         </td>
 

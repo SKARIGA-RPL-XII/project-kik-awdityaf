@@ -15,17 +15,11 @@
                 </h1>
             </div>
             <div class="col-auto">
-                <a href="{{ url('gym/manual-checkin') }}" class="btn btn-gym-primary shadow-sm mr-2">
-                    <i class="fas fa-user-plus mr-2"></i> Manual Check-in
-                </a>
-
+               
                 <button class="btn btn-gym-secondary shadow-sm mr-2" onclick="refreshAttendance()">
                     <i class="fas fa-sync mr-2"></i> Refresh
                 </button>
 
-                <a href="{{ url('gym/attendance-history') }}" class="btn btn-gym-secondary shadow-sm">
-                    <i class="fas fa-history mr-2"></i> View History
-                </a>
             </div>
         </div>
     </div>

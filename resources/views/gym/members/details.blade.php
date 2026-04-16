@@ -134,13 +134,13 @@
                 @if ($daysLeft > 0)
 
                 <small class="text-success">
-                    {{ $daysLeft }} days remaining
+                    {{ floor(abs($daysLeft)) }} days remaining
                 </small>
 
                 @else
 
                 <small class="text-danger">
-                    {{ abs($daysLeft) }} days overdue
+                    {{ floor(abs($daysLeft)) }} days overdue
                 </small>
 
                 @endif

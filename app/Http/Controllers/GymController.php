@@ -88,6 +88,24 @@ class GymController extends Controller
     $plans = MembershipPlan::all();
     $subscriptions = MemberSubscription::with('member.user', 'plan')->get();
     
+    // --- STATS KARTU SUBSCRIPTION ---
+    $stats = [
+        'active_subscriptions' => $subscriptions->where('end_date', '>=', Carbon::today())
+                                    ->where('payment_status', 'Paid')
+                                    ->count(),
+        'expiring_soon'         => $subscriptions->filter(function ($sub) {
+                                        return $sub->end_date >= Carbon::today() && $sub->end_date <= Carbon::today()->addDays(7) && $sub->payment_status === 'Paid';
+                                    })->count(),
+        'overdue'               => $subscriptions->where('end_date', '<', Carbon::today())
+                                    ->where('payment_status', '!=', 'Paid')
+                                    ->count(),
+        'monthly_revenue'       => $subscriptions->where('payment_status', 'Paid')
+                                    ->filter(function ($sub) {
+                                        $createdAt = Carbon::parse($sub->created_at);
+                                        return $createdAt->month === Carbon::now()->month && $createdAt->year === Carbon::now()->year;
+                                    })->sum('amount_paid'),
+    ];
+
     return view('gym.subscriptions.index', compact(
         'title',
         'memberStats',
@@ -98,7 +116,8 @@ class GymController extends Controller
         'expiringSubscriptions',
         'monthlyRevenueChart',
         'plans',
-        'subscriptions'
+        'subscriptions',
+        'stats'
     ));
 }
     // ================= MEMBERS =================
@@ -226,12 +245,52 @@ class GymController extends Controller
     }
 
     // ================= SUBSCRIPTIONS =================
-    public function subscriptions()
+    public function subscriptions(Request $request)
     {
-        $subscriptions = MemberSubscription::with('member.user', 'plan')->get();
+        $query = MemberSubscription::with('member.user', 'plan');
+
+        // Filter by status
+        if ($request->status === 'active') {
+            $query->where('end_date', '>=', Carbon::today())->where('payment_status', 'Paid');
+        } elseif ($request->status === 'expiring') {
+            $query->whereBetween('end_date', [Carbon::today(), Carbon::today()->addDays(7)])->where('payment_status', 'Paid');
+        } elseif ($request->status === 'overdue') {
+            $query->where('end_date', '<', Carbon::today())->where('payment_status', '!=', 'Paid');
+        }
+
+        // Filter by plan
+        if ($request->plan) {
+            $query->where('membership_plan_id', $request->plan);
+        }
+
+        // Filter by month
+        if ($request->month) {
+            [$year, $month] = explode('-', $request->month);
+            $query->whereYear('created_at', $year)->whereMonth('created_at', $month);
+        }
+
+        $subscriptions = $query->get();
         $plans = MembershipPlan::all();
 
-        return view('gym.subscriptions.index', compact('subscriptions', 'plans'));
+        // Kalkulasi statistics dinamis
+        $stats = [
+            'active_subscriptions' => $subscriptions->where('end_date', '>=', Carbon::today())
+                                        ->where('payment_status', 'Paid')
+                                        ->count(),
+            'expiring_soon'         => $subscriptions->filter(function ($sub) {
+                                            return $sub->end_date >= Carbon::today() && $sub->end_date <= Carbon::today()->addDays(7) && $sub->payment_status === 'Paid';
+                                        })->count(),
+            'overdue'               => $subscriptions->where('end_date', '<', Carbon::today())
+                                        ->where('payment_status', '!=', 'Paid')
+                                        ->count(),
+            'monthly_revenue'       => $subscriptions->where('payment_status', 'Paid')
+                                        ->filter(function ($sub) {
+                                            $createdAt = Carbon::parse($sub->created_at);
+                                            return $createdAt->month === Carbon::now()->month && $createdAt->year === Carbon::now()->year;
+                                        })->sum('amount_paid'),
+        ];
+
+        return view('gym.subscriptions.index', compact('subscriptions', 'plans', 'stats'));
     }
 
     public function createSubscription()
